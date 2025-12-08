@@ -3,7 +3,9 @@ class StatementConsolidatorApp {
     constructor() {
         this.sheetsAPI = new SheetsAPI();
         this.ocrService = new OCRService();
+
         this.dedupEngine = new DeduplicationEngine();
+        this.fileQueue = new FileQueueManager();
 
         this.currentFile = null;
         this.extractedData = null;
@@ -56,13 +58,21 @@ class StatementConsolidatorApp {
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file) this.handleFileUpload(file);
+            const files = Array.from(e.dataTransfer.files); // Convert to array
+            if (files.length > 0) this.handleFileUpload(files);
         });
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) this.handleFileUpload(file);
+        // Multi-file input change
+        fileInput.addEventListener('change', async (e) => {
+            if (e.target.files.length > 0) {
+                await this.handleFileUpload(Array.from(e.target.files));
+                fileInput.value = ''; // Reset
+            }
+        });
+
+        // Process All button
+        document.getElementById('processAllBtn').addEventListener('click', () => {
+            this.processQueue();
         });
 
         // Account selection
@@ -255,72 +265,188 @@ class StatementConsolidatorApp {
         }
     }
 
-    // Handle file upload
-    async handleFileUpload(file) {
-        // Validate file
-        if (!CONFIG.UPLOAD.ACCEPTED_TYPES.includes(file.type)) {
-            this.showFieldError('dropZone', 'Invalid file type. Please upload PDF or image files.');
-            return;
-        }
-
-        if (file.size > CONFIG.UPLOAD.MAX_FILE_SIZE) {
-            this.showFieldError('dropZone', 'File too large. Maximum size is 10MB.');
-            return;
-        }
+    // Handle file upload (supports multiple)
+    async handleFileUpload(files) {
+        // Handle single file from drop event helper logic if array passed
+        const fileList = Array.isArray(files) ? files : [files];
 
         if (!this.ocrService.getApiKey()) {
             this.showFieldError('dropZone', 'Please enter your Gemini API key first');
             return;
         }
 
-        this.currentFile = file;
+        // Add to queue
+        const newFiles = await this.fileQueue.addFiles(fileList);
 
-        // Show file info
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = this.formatFileSize(file.size);
-        document.getElementById('fileInfo').classList.remove('hidden');
-
-        // Process the file
-        await this.processFile(file);
+        if (newFiles.length > 0) {
+            document.getElementById('organizerSection').classList.remove('hidden');
+            this.renderFileQueue();
+            this.showStatus(`Added ${newFiles.length} file(s) to queue`, 'success');
+        }
     }
 
-    // Process uploaded file
-    async processFile(file) {
-        try {
-            this.showFieldStatus('dropZone', 'Extracting transactions with AI...', 'info');
-            document.getElementById('processingIndicator').classList.remove('hidden');
+    // Render file queue
+    renderFileQueue() {
+        const listEl = document.getElementById('fileList');
+        const countEl = document.getElementById('queueStats');
+        listEl.innerHTML = '';
 
-            // Extract transactions using OCR
-            this.extractedData = await this.ocrService.extractTransactions(file);
+        const files = this.fileQueue.getFiles();
+        countEl.textContent = `${files.length} files`;
 
-            document.getElementById('processingIndicator').classList.add('hidden');
+        files.forEach(fileObj => {
+            const item = document.createElement('div');
+            item.className = `file-item ${fileObj.status}`;
+            item.id = `item-${fileObj.id}`;
 
-            if (!this.extractedData.transactions || this.extractedData.transactions.length === 0) {
-                this.showFieldStatus('dropZone', 'No transactions found in the document', 'warning');
-                return;
+            // Determine icon
+            let icon = '📄';
+            if (fileObj.file.type.includes('image')) icon = '🖼️';
+
+            // Account options logic
+            let accountSelectHtml = '';
+            // Only show select if processed or if we want to allow pre-selection (skip for now to keep simple)
+            if (fileObj.status === 'done' || fileObj.accountSheet) {
+                const options = this.accountSheets.map(s =>
+                    `<option value="${s.title}" ${fileObj.accountSheet?.title === s.title ? 'selected' : ''}>${s.displayName}</option>`
+                ).join('');
+
+                accountSelectHtml = `
+                    <select class="file-account-select" onchange="app.updateFileAccount('${fileObj.id}', this.value)">
+                        <option value="">Select Account...</option>
+                        ${options}
+                    </select>
+                    <button class="primary-btn small" onclick="app.previewFile('${fileObj.id}')">Preview</button>
+                 `;
+            } else if (fileObj.status === 'pending') {
+                accountSelectHtml = `<span class="file-meta">Waiting to process...</span>`;
             }
 
-            this.showFieldStatus('dropZone', `Extracted ${this.extractedData.transactions.length} transaction(s)`, 'success');
+            item.innerHTML = `
+                <div class="file-item-header">
+                    <div class="file-info">
+                        <span class="file-icon">${icon}</span>
+                        <div>
+                            <div class="file-name">${fileObj.name}</div>
+                            <div class="file-meta">${this.formatFileSize(fileObj.size)}</div>
+                        </div>
+                    </div>
+                    <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
+                </div>
+                ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
+                <div class="file-actions">
+                    ${accountSelectHtml}
+                     <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
+                </div>
+            `;
+            listEl.appendChild(item);
+        });
 
-            // Suggest account sheet
-            const suggestedSheet = this.ocrService.suggestAccountSheet(
-                this.extractedData,
-                this.accountSheets
-            );
-
-            this.showAccountSelector(suggestedSheet);
-
-        } catch (error) {
-            document.getElementById('processingIndicator').classList.add('hidden');
-            let errorMessage = error.message;
-
-            if (errorMessage.includes('429') || errorMessage.includes('Resource exhausted')) {
-                errorMessage = 'Gemini API error: Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.';
-            }
-
-            this.showFieldError('dropZone', errorMessage);
-            console.error(error);
+        // Update Process Button state
+        const pendingCount = this.fileQueue.getPendingFiles().length;
+        const btn = document.getElementById('processAllBtn');
+        if (pendingCount === 0 && files.length > 0) {
+            btn.textContent = 'Import All Verified';
+            btn.onclick = () => this.importAllFiles(); // Change action
+        } else {
+            btn.textContent = `Process Queue (${pendingCount})`;
+            btn.onclick = () => this.processQueue();
         }
+    }
+
+    // Process file queue
+    async processQueue() {
+        const pending = this.fileQueue.getPendingFiles();
+        if (pending.length === 0) return;
+
+        this.showStatus(`Processing ${pending.length} files...`, 'info');
+
+        for (const fileObj of pending) {
+            try {
+                this.fileQueue.updateStatus(fileObj.id, 'processing');
+                this.renderFileQueue(); // Update UI
+
+                // Extract
+                const extracted = await this.ocrService.extractTransactions(fileObj.file);
+
+                // Suggest account
+                const suggestedSheet = this.ocrService.suggestAccountSheet(extracted, this.accountSheets);
+
+                // Update file object
+                this.fileQueue.setExtractedData(fileObj.id, extracted);
+                this.fileQueue.setAccount(fileObj.id, suggestedSheet);
+
+            } catch (error) {
+                console.error(error);
+                let msg = error.message;
+                if (msg.includes('429')) msg = 'Quota Exceeded (429)';
+                this.fileQueue.updateStatus(fileObj.id, 'error', msg);
+            }
+            this.renderFileQueue(); // Update UI each step
+        }
+
+        this.showStatus('Queue processing complete', 'success');
+    }
+
+    // Remove file from queue
+    removeFile(id) {
+        this.fileQueue.removeFile(id);
+        this.renderFileQueue();
+    }
+
+    // Update assigned account manually
+    updateFileAccount(id, sheetTitle) {
+        const sheet = this.accountSheets.find(s => s.title === sheetTitle);
+        this.fileQueue.setAccount(id, sheet);
+    }
+
+    // Preview single file
+    previewFile(id) {
+        const fileObj = this.fileQueue.getFile(id);
+        if (!fileObj || !fileObj.data) return;
+
+        // Set global state for preview
+        this.extractedData = fileObj.data;
+        this.selectedSheet = fileObj.accountSheet;
+
+        // Show account selector (just for reuse of logic or direct preview)
+        // Actually, let's just jump to preview if Account is set
+        if (this.selectedSheet) {
+            this.confirmAccount(); // Reuses logic to load existing and show preview
+        } else {
+            this.showStatus('Please select an account first', 'warning');
+        }
+    }
+
+    // Import All Files
+    async importAllFiles() {
+        const readyFiles = this.fileQueue.getFiles().filter(f => f.status === 'done' && f.accountSheet);
+        if (readyFiles.length === 0) {
+            this.showStatus('No ready files to import', 'warning');
+            return;
+        }
+
+        let successCount = 0;
+
+        for (const fileObj of readyFiles) {
+            try {
+                const filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
+                if (filtered.unique.length > 0) {
+                    await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, filtered.unique);
+                    successCount++;
+                }
+            } catch (e) {
+                console.error('Import failed for ' + fileObj.name, e);
+            }
+        }
+
+        this.showStatus(`Batch import complete. Imported ${successCount} files.`, 'success');
+        // Optional: clear queue
+    }
+
+    // Legacy method helper for single file Preview flow
+    async processFile(file) {
+        // Redundant now, kept if needed or logic moved to processQueue
     }
 
     // Show account selector
@@ -566,7 +692,12 @@ class StatementConsolidatorApp {
         document.getElementById('accountSelector').classList.add('hidden');
         document.getElementById('previewSection').classList.add('hidden');
 
-        this.showStatus('Ready for next upload', 'info');
+        if (this.fileQueue.getFiles().length === 0) {
+            document.getElementById('organizerSection').classList.add('hidden');
+            this.showStatus('Ready for next upload', 'info');
+        } else {
+            this.showStatus('Ready for next file', 'info');
+        }
     }
 
     // Show status message

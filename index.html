@@ -124,6 +124,21 @@
       </div>
     </section>
 
+    <!-- Statement Organizer / File Queue -->
+    <section id="organizerSection" class="step-card hidden">
+      <div class="step-header">
+        <div class="step-number">3a</div>
+        <h2>Statement Organizer</h2>
+        <div class="header-actions">
+          <span id="queueStats" class="queue-stats">0 files</span>
+          <button id="processAllBtn" class="primary-btn small">Process Queue</button>
+        </div>
+      </div>
+      <div id="fileList" class="file-list">
+        <!-- File Items will be injected here -->
+      </div>
+    </section>
+
     <!-- Step 4: Preview & Import -->
     <section id="previewSection" class="card hidden">
       <h2 class="card-title">👀 Step 4: Preview & Import</h2>
@@ -167,7 +182,7 @@
         All processing happens in your browser. Your data is never sent to external servers.
       </p>
       <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">
-        <span id="appVersion">v0.1.5 Beta</span> |
+        <span id="appVersion">v0.2.0 Beta</span> |
         <a href="https://github.com/kuancheen/statement-consolidator" target="_blank"
           style="color: var(--primary-light); text-decoration: none;">
           GitHub
@@ -178,6 +193,9 @@
 
   <!-- Scripts -->
   <script src="js/sheets-api.js"></script>
+  <script src="js/jszip.min.js"></script>
+  <script src="js/file-queue.js"></script>
+
   <script src="js/ocr-service.js"></script>
   <script src="js/deduplication.js"></script>
   <script src="js/app.js"></script>
