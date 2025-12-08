@@ -825,3 +825,86 @@ select.error {
   background-color: #f8f9fa;
   border-color: #ccc;
 }
+
+/* Compact File List Item */
+.file-item-header {
+  display: flex !important; /* Force flex */
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px; /* reduced padding */
+  gap: 12px;
+}
+
+.file-info {
+  flex: 1; /* Take available space */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0; /* Enable flex truncation */
+}
+
+/* Compact name/meta */
+.file-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Status badge compact */
+.file-status {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+}
+
+/* Inline Actions in Header */
+.file-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-header-actions select {
+    padding: 2px 4px;
+    font-size: 0.8rem;
+    max-width: 140px;
+}
+
+/* Arrow Icon */
+.expand-icon {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.file-item.active .expand-icon {
+  transform: rotate(180deg);
+}
+
+/* Inline Account Sheets List */
+.account-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.account-item-display {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+
+/* Force row direction for account list - Critical Fix */
+.account-list {
+  flex-direction: row !important;
+  align-items: center;
+}

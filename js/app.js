@@ -324,6 +324,7 @@ class StatementConsolidatorApp {
             // Account options logic
             let accountSelectHtml = '';
             // Only show select if processed or if we want to allow pre-selection (skip for now to keep simple)
+
             if (fileObj.status === 'done' || fileObj.accountSheet) {
                 const options = this.accountSheets.map(s =>
                     `<option value="${s.title}" ${fileObj.accountSheet?.title === s.title ? 'selected' : ''}>${s.displayName}</option>`
@@ -334,28 +335,29 @@ class StatementConsolidatorApp {
                         <option value="">Select Account...</option>
                         ${options}
                     </select>
-                    <button class="primary-btn small" onclick="app.previewFile('${fileObj.id}')">Preview</button>
                  `;
             } else if (fileObj.status === 'pending') {
-                accountSelectHtml = `<span class="file-meta">Waiting to process...</span>`;
+                accountSelectHtml = `<span class="file-meta">Waiting...</span>`;
             }
 
             item.innerHTML = `
                 <div class="file-item-header" onclick="app.previewFile('${fileObj.id}')">
                     <div class="file-info">
                         <span class="file-icon">${icon}</span>
-                        <div>
+                        <div style="min-width: 0;">
                             <div class="file-name">${fileObj.name}</div>
                             <div class="file-meta">${this.formatFileSize(fileObj.size)}</div>
                         </div>
                     </div>
-                    <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
+                    
+                    <div class="file-header-actions" onclick="event.stopPropagation()">
+                         ${accountSelectHtml}
+                         <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
+                         <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
+                         <span class="expand-icon" onclick="app.previewFile('${fileObj.id}')">▼</span>
+                    </div>
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
-                <div class="file-actions" onclick="event.stopPropagation()">
-                    ${accountSelectHtml}
-                     <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
-                </div>
                 <!-- Inline Preview Container -->
                 <div class="file-preview-container" onclick="event.stopPropagation()"></div>
             `;

@@ -94,11 +94,11 @@
 
       <div id="dropZone" class="drop-zone">
         <div class="drop-zone-icon">📄</div>
-        <div class="drop-zone-text">Drag & drop your statement here</div>
-        <div class="drop-zone-hint">or click to browse (PDF, PNG, JPG - max 10MB)</div>
+        <div class="drop-zone-text">Drag & drop your statement(s) here</div>
+        <div class="drop-zone-hint">or click to browse (PDF, PNG, JPG, ZIP - max 10MB)</div>
       </div>
 
-      <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+      <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.zip" style="display: none;" multiple>
 
       <!-- File Info -->
       <div id="fileInfo" class="file-info hidden">
@@ -146,7 +146,7 @@
     <!-- Statement Organizer / File Queue -->
     <section id="organizerSection" class="step-card hidden">
       <div class="step-header">
-        <h2>Statement Organizer</h2>
+        <h2>List of uploaded statements</h2>
         <div class="header-actions">
           <span id="queueStats" class="queue-stats">0 files</span>
           <button id="processAllBtn" class="btn btn-primary">Process Queue</button>
