@@ -427,20 +427,42 @@ class StatementConsolidatorApp {
         this.selectedSheet = fileObj.accountSheet;
 
         if (this.selectedSheet) {
-            // Sync main selector so confirmAccount logic works
-            const mainSelect = document.getElementById('accountSheetSelect');
-            if (mainSelect) {
-                mainSelect.value = this.selectedSheet.title;
-            }
-
-            this.confirmAccount();
+            this.confirmAccount(this.selectedSheet);
 
             // Scroll to preview section
             setTimeout(() => {
                 document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
             }, 100);
         } else {
-            this.showStatus('Please select an account first', 'warning');
+            // Show inline error
+            this.showFileError(id, 'Please select an account first');
+        }
+    }
+
+    // Show error inline in file item
+    showFileError(id, message) {
+        const item = document.getElementById(`item-${id}`);
+        if (!item) return;
+
+        // Check if error already exists
+        let errorEl = item.querySelector('.file-inline-error');
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'field-error file-inline-error';
+            errorEl.style.marginTop = '8px';
+
+            // Allow close
+            errorEl.innerHTML = `<span>${message}</span><button class="field-message-close" onclick="this.parentElement.remove()">×</button>`;
+
+            // Insert before actions
+            const actions = item.querySelector('.file-actions');
+            if (actions) {
+                item.insertBefore(errorEl, actions);
+            } else {
+                item.appendChild(errorEl);
+            }
+        } else {
+            errorEl.querySelector('span').textContent = message;
         }
     }
 
@@ -498,16 +520,22 @@ class StatementConsolidatorApp {
     }
 
     // Confirm account selection
-    async confirmAccount() {
-        const select = document.getElementById('accountSheetSelect');
-        const selectedValue = select.value;
+    async confirmAccount(sheet = null) {
+        if (sheet) {
+            this.selectedSheet = sheet;
+        } else {
+            const select = document.getElementById('accountSheetSelect');
+            const selectedValue = select.value;
 
-        if (!selectedValue) {
-            this.showStatus('Please select an account', 'error');
-            return;
+            if (!selectedValue) {
+                this.showFieldError('accountSheetSelect', 'Please select an account');
+                return;
+            }
+            this.selectedSheet = this.accountSheets.find(s => s.title === selectedValue);
         }
 
-        this.selectedSheet = this.accountSheets.find(s => s.title === selectedValue);
+        // No need to hide if we didn't show it (e.g. from Preview flow)
+        // But harmless to ensure it's hidden if we are moving to Step 4
         this.hideAccountSelector();
 
         // Load existing transactions for deduplication
