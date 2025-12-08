@@ -452,19 +452,77 @@ class StatementConsolidatorApp {
 
             this.showStatus(`Importing ${filtered.unique.length} transaction(s)...`, 'info');
 
-            await this.sheetsAPI.appendTransactions(this.selectedSheet.title, filtered.unique);
+            try {
+                await this.sheetsAPI.appendTransactions(this.selectedSheet.title, filtered.unique);
+                this.showStatus(`Successfully imported ${filtered.unique.length} transaction(s)!`, 'success');
 
-            this.showStatus(`Successfully imported ${filtered.unique.length} transaction(s)!`, 'success');
-
-            // Reset for next upload
-            setTimeout(() => {
-                this.resetUpload();
-            }, 2000);
+                // Reset for next upload
+                setTimeout(() => {
+                    this.resetUpload();
+                }, 2000);
+            } catch (error) {
+                // If write fails due to OAuth requirement, offer CSV download
+                if (error.message.includes('OAuth') || error.message.includes('UNAUTHENTICATED') || error.message.includes('API keys are not supported')) {
+                    this.showStatus('Direct import requires OAuth. Downloading as CSV instead...', 'warning');
+                    this.downloadAsCSV(filtered.unique);
+                } else {
+                    throw error;
+                }
+            }
 
         } catch (error) {
             this.showStatus(`Import failed: ${error.message}`, 'error');
             console.error(error);
         }
+    }
+
+    // Download transactions as CSV
+    downloadAsCSV(transactions) {
+        // Create CSV content
+        const headers = ['Date', 'Description', 'Credit', 'Debit'];
+        const csvRows = [headers.join(',')];
+
+        transactions.forEach(t => {
+            const row = [
+                t.date,
+                `"${t.description.replace(/"/g, '""')}"`, // Escape quotes
+                t.credit || '',
+                t.debit || ''
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvContent = csvRows.join('\n');
+
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        const filename = `${this.selectedSheet.displayName}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showStatus(`Downloaded ${transactions.length} transactions as ${filename}. You can now import this CSV to your Google Sheet.`, 'success');
+
+        // Show instructions
+        setTimeout(() => {
+            alert(
+                `CSV Downloaded!\n\n` +
+                `File: ${filename}\n\n` +
+                `To import to Google Sheets:\n` +
+                `1. Open your Google Sheet: ${this.selectedSheet.title}\n` +
+                `2. Click File → Import\n` +
+                `3. Upload the CSV file\n` +
+                `4. Choose "Append to current sheet"\n` +
+                `5. Click "Import data"`
+            );
+        }, 500);
     }
 
     // Reset upload state

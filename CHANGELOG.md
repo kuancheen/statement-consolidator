@@ -4,6 +4,23 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.1.3] - 2025-12-09
+
+### Added
+- CSV download as fallback when direct Google Sheets import fails
+- Automatic detection of OAuth authentication errors
+- Instructions popup after CSV download
+- Filename includes account name and date
+
+### Fixed
+- Google Sheets API write operations now handled gracefully
+- App automatically downloads CSV when API key authentication fails
+- Users can now import data via CSV upload to Google Sheets
+
+### Changed
+- Import button now tries direct import first, falls back to CSV download
+- Better error handling for authentication issues
+
 ## [0.1.2] - 2025-12-08
 
 ### Added
