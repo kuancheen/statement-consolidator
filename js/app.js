@@ -210,9 +210,11 @@ class StatementConsolidatorApp {
 
             if (this.accountSheets.length === 0) {
                 this.showFieldStatus('sheetUrlInput', 'No account sheets found. Create sheets with @ prefix (e.g., @DBS Savings)', 'warning');
+                document.getElementById('accountSheetsList').classList.add('hidden');
             } else {
                 this.showFieldStatus('sheetUrlInput', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
                 document.getElementById('uploadSection').classList.remove('hidden');
+                this.displayAccountSheetsList();
             }
 
             this.updateAccountSheetsList();
@@ -233,6 +235,24 @@ class StatementConsolidatorApp {
             option.textContent = sheet.displayName;
             select.appendChild(option);
         });
+    }
+
+    // Display account sheets list in Step 2
+    displayAccountSheetsList() {
+        const container = document.getElementById('accountSheetsList');
+        container.innerHTML = '';
+
+        if (this.accountSheets.length > 0) {
+            this.accountSheets.forEach(sheet => {
+                const item = document.createElement('div');
+                item.className = 'account-item-display';
+                item.textContent = sheet.displayName;
+                container.appendChild(item);
+            });
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
     }
 
     // Handle file upload

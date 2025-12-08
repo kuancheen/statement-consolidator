@@ -45,11 +45,11 @@
             Google AI Studio
           </a>
         </p>
-          <br>
-      <button id="verifyApiKeyBtn" class="btn btn-primary">
-        Test & Verify API Key
-      </button>
-          <strong>Note:</strong> This key is used for both AI OCR (Gemini) and Google Sheets access.
+        <br>
+        <button id="verifyApiKeyBtn" class="btn btn-primary">
+          Test & Verify API Key
+        </button>
+        <strong>Note:</strong> This key is used for both AI OCR (Gemini) and Google Sheets access.
       </div>
     </section>
 
@@ -66,6 +66,7 @@
       <button id="connectSheetBtn" class="btn btn-primary">
         Connect to Sheet
       </button>
+      <div id="accountSheetsList" class="account-list hidden"></div>
     </section>
 
     <!-- Step 3: Upload Statement -->
@@ -166,7 +167,7 @@
         All processing happens in your browser. Your data is never sent to external servers.
       </p>
       <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">
-        <span id="appVersion">v0.1.4 Beta</span> |
+        <span id="appVersion">v0.1.5 Beta</span> |
         <a href="https://github.com/kuancheen/statement-consolidator" target="_blank"
           style="color: var(--primary-light); text-decoration: none;">
           GitHub

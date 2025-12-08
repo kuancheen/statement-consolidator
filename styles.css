@@ -631,3 +631,27 @@ select.error {
 .field-status span {
   flex: 1;
 }
+
+/* Account Sheets List in Step 2 */
+.account-list {
+  margin-top: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.account-item-display {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm);
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.account-item-display::before {
+  content: '📄';
+  margin-right: var(--spacing-sm);
+}
