@@ -36,6 +36,11 @@ class FileQueueManager {
             for (const filename of Object.keys(contents.files)) {
                 const zipEntry = contents.files[filename];
                 if (!zipEntry.dir) {
+                    // Ignore macOS system files
+                    if (filename.includes('__MACOSX') || filename.split('/').pop().startsWith('._')) {
+                        continue;
+                    }
+
                     // Check extension
                     const ext = filename.split('.').pop().toLowerCase();
                     let type = '';

@@ -4,6 +4,14 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.2.4] - 2025-12-09
+
+### Added
+- **Accordion Preview:** Files in the Organizer now expand to show their preview table inline, replacing the Step 4 section.
+- **Mac Filtering:** Automated filtering of `__MACOSX` folders and hidden system files in ZIP uploads.
+
+### Changed
+- **UI:** Removed the standalone "Preview & Import" section in favor of the inline accordion view.
 ## [0.2.3] - 2025-12-09
 
 ### Fixed

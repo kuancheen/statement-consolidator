@@ -327,7 +327,7 @@ class StatementConsolidatorApp {
             }
 
             item.innerHTML = `
-                <div class="file-item-header">
+                <div class="file-item-header" onclick="app.previewFile('${fileObj.id}')">
                     <div class="file-info">
                         <span class="file-icon">${icon}</span>
                         <div>
@@ -338,10 +338,12 @@ class StatementConsolidatorApp {
                     <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
-                <div class="file-actions">
+                <div class="file-actions" onclick="event.stopPropagation()">
                     ${accountSelectHtml}
                      <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
                 </div>
+                <!-- Inline Preview Container -->
+                <div class="file-preview-container" onclick="event.stopPropagation()"></div>
             `;
             listEl.appendChild(item);
         });
@@ -417,26 +419,87 @@ class StatementConsolidatorApp {
         this.fileQueue.setAccount(id, sheet);
     }
 
-    // Preview single file
-    previewFile(id) {
+    // Preview single file (Accordion style)
+    async previewFile(id) {
         const fileObj = this.fileQueue.getFile(id);
         if (!fileObj || !fileObj.data) return;
 
-        // Set global state for preview
-        this.extractedData = fileObj.data;
+        const item = document.getElementById(`item-${id}`);
+        const previewContainer = item.querySelector('.file-preview-container');
+
+        // Toggle behavior
+        const isActive = item.classList.contains('active');
+
+        // Close all others
+        document.querySelectorAll('.file-item').forEach(el => {
+            el.classList.remove('active');
+            el.querySelector('.file-preview-container').innerHTML = '';
+        });
+
+        if (isActive) {
+            return; // Just closing
+        }
+
+        // Open this one
+        item.classList.add('active');
+
         this.selectedSheet = fileObj.accountSheet;
+        this.extractedData = fileObj.data;
 
         if (this.selectedSheet) {
-            this.confirmAccount(this.selectedSheet);
+            previewContainer.innerHTML = '<div class="processing-indicator" style="margin:0"><div class="spinner"></div><span>Loading transactions...</span></div>';
 
-            // Scroll to preview section
-            setTimeout(() => {
-                document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+            // Sync main selector (legacy support)
+            const mainSelect = document.getElementById('accountSheetSelect');
+            if (mainSelect) mainSelect.value = this.selectedSheet.title;
+
+            // Load existing for deduplication logic
+            await this.loadExistingTransactions();
+
+            // Render Inline Table
+            const filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
+
+            // Generate rows
+            const rows = filtered.unique.map(t => this.createTransactionRowHTML(t, false))
+                .concat(filtered.duplicates.map(d => this.createTransactionRowHTML(d.transaction, true)))
+                .join('');
+
+            const html = `
+                <div class="preview-stats" style="margin-bottom: 1rem; margin-top: 1rem;">
+                    <div class="stat-item"><span class="stat-label">New</span><span class="stat-value success">${filtered.unique.length}</span></div>
+                    <div class="stat-item"><span class="stat-label">Duplicates</span><span class="stat-value warning">${filtered.duplicates.length}</span></div>
+                </div>
+                 <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                    <table>
+                        <thead><tr><th>Date</th><th>Description</th><th>Credit</th><th>Debit</th><th>Status</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+                 <div class="text-center mt-2">
+                    <button class="btn btn-success" onclick="app.importTransactions()">Import This File (Global)</button>
+                 </div>
+            `;
+
+            previewContainer.innerHTML = html;
+
         } else {
             // Show inline error
             this.showFileError(id, 'Please select an account first');
+            item.classList.remove('active');
         }
+    }
+
+    // Helper for generating row HTML (since createTransactionRow returns DOM)
+    createTransactionRowHTML(transaction, isDuplicate) {
+        return `
+            <tr class="${isDuplicate ? 'duplicate' : ''}">
+              <td>${transaction.date}</td>
+              <td>${transaction.description}</td>
+              <td class="amount credit">${transaction.credit || '-'}</td>
+              <td class="amount debit">${transaction.debit || '-'}</td>
+              <td>${isDuplicate ? '<span class="badge duplicate">Duplicate</span>' : '<span class="badge new">New</span>'}</td>
+            </tr>
+        `;
     }
 
     // Show error inline in file item
