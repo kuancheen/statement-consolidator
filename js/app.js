@@ -18,7 +18,7 @@ class StatementConsolidatorApp {
     // Initialize the app
     init() {
         this.setupEventListeners();
-        this.loadSavedApiKey();
+        this.loadSavedCredentials();
         this.loadLastSheet();
         this.displayVersion();
         this.updateAuthUI();
@@ -44,17 +44,6 @@ class StatementConsolidatorApp {
             const type = input.type === 'password' ? 'text' : 'password';
             input.type = type;
         });
-
-        // Initialize Token Client if Client ID exists
-        const clientId = localStorage.getItem(CONFIG.STORAGE_KEYS.CLIENT_ID);
-        if (clientId) {
-            try {
-                this.sheetsAPI.initTokenClient(clientId);
-                document.getElementById('clientIdInput').value = clientId;
-            } catch (e) {
-                console.error('Failed to init token client', e);
-            }
-        }
 
         // Credentials Save
         document.getElementById('saveCredentialsBtn').addEventListener('click', () => {
@@ -134,12 +123,26 @@ class StatementConsolidatorApp {
         });
     }
 
-    // Load saved API key
-    loadSavedApiKey() {
+    // Load saved credentials (API Key & Client ID)
+    loadSavedCredentials() {
+        // 1. API Key
         const savedKey = this.ocrService.getApiKey();
         if (savedKey) {
             document.getElementById('apiKeyInput').value = savedKey;
-            this.showStatus('API key loaded from storage', 'success');
+            this.sheetsAPI.setApiKey(savedKey); // Ensure it's set here too
+            this.showStatus('Credentials loaded from storage', 'success');
+        }
+
+        // 2. Client ID
+        const clientId = localStorage.getItem(CONFIG.STORAGE_KEYS.CLIENT_ID);
+        if (clientId) {
+            try {
+                this.sheetsAPI.initTokenClient(clientId);
+                document.getElementById('clientIdInput').value = clientId;
+                console.log('Client ID loaded successfully');
+            } catch (e) {
+                console.error('Failed to init token client from storage', e);
+            }
         }
     }
 
