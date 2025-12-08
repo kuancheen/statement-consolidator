@@ -55,8 +55,25 @@ class StatementConsolidatorApp {
         // Or we inject it.
 
         document.getElementById('connectSheetBtn').addEventListener('click', () => {
+            // JIT Initialization if deferred
+            if (!this.sheetsAPI.tokenClient) {
+                const clientId = document.getElementById('clientIdInput').value.trim();
+                if (clientId) {
+                    try {
+                        this.sheetsAPI.initTokenClient(clientId);
+                    } catch (e) {
+                        this.showStatus('Initialization failed: ' + e.message, 'error');
+                        return;
+                    }
+                }
+            }
+
             if (!this.sheetsAPI.isAuthorized()) {
-                this.sheetsAPI.requestAccessToken();
+                try {
+                    this.sheetsAPI.requestAccessToken();
+                } catch (e) {
+                    this.showStatus(e.message, 'error');
+                }
             } else {
                 this.connectToSheet();
             }
@@ -525,6 +542,12 @@ class StatementConsolidatorApp {
                 .join('');
 
             const html = `
+                <div class="ocr-meta" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <span><strong>Detected Account:</strong> ${fileObj.data.accountName || 'Unknown'}</span>
+                        <span class="badge" style="background:var(--primary-dark); color:white">${fileObj.data.accountType || 'Unknown'}</span>
+                    </div>
+                </div>
                 <div class="preview-stats" style="margin-bottom: 1rem; margin-top: 1rem;">
                     <div class="stat-item"><span class="stat-label">New</span><span class="stat-value success">${filtered.unique.length}</span></div>
                     <div class="stat-item"><span class="stat-label">Duplicates</span><span class="stat-value warning">${filtered.duplicates.length}</span></div>

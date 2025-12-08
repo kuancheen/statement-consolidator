@@ -721,6 +721,9 @@ select.error {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  margin: 0;
+  padding: 0;
+  background: transparent;
 }
 
 .file-icon {

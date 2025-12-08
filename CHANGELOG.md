@@ -4,6 +4,15 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.11] - 2025-12-09
+
+### Changed
+- **UI:** Fixed stubborn visual gaps in the file list by resetting inherited margins on file info elements.
+- **Feature:** Added display of DETECTED Account Name and Type (from AI) in the file preview section.
+## [0.3.10] - 2025-12-09
+
+### Fixed
+- **Auth:** Added just-in-time initialization for the "Sign In" button. It now works immediately even if the initial page load hadn't finished initializing the Google library.
 ## [0.3.9] - 2025-12-09
 
 ### Changed
