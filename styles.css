@@ -908,3 +908,23 @@ select.error {
   flex-direction: row !important;
   align-items: center;
 }
+
+/* Fix Spacing */
+.file-item {
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+.file-item-header {
+  padding: 12px 16px !important;
+}
+
+.file-preview-container {
+  padding: 0;
+}
+.file-preview-container .preview-stats {
+    margin: 16px;
+}
+.file-preview-container .table-container {
+    margin: 0 16px 16px 16px; 
+}
