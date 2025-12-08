@@ -70,10 +70,7 @@ class StatementConsolidatorApp {
             }
         });
 
-        // Process All button
-        document.getElementById('processAllBtn').addEventListener('click', () => {
-            this.processQueue();
-        });
+
 
         // Account selection
         document.getElementById('confirmAccountBtn').addEventListener('click', () => {
@@ -347,10 +344,23 @@ class StatementConsolidatorApp {
         const btn = document.getElementById('processAllBtn');
         if (pendingCount === 0 && files.length > 0) {
             btn.textContent = 'Import All Verified';
-            btn.onclick = () => this.importAllFiles(); // Change action
+            btn.classList.add('btn-success');
+            btn.classList.remove('primary-btn');
+            // Remove previous listeners to be safe (though assignment overrides onclick)
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.importAllFiles();
+            };
         } else {
             btn.textContent = `Process Queue (${pendingCount})`;
-            btn.onclick = () => this.processQueue();
+            btn.classList.remove('btn-success');
+            btn.classList.add('primary-btn');
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.processQueue();
+            };
         }
     }
 
