@@ -30,6 +30,13 @@ class StatementConsolidatorApp {
             this.saveApiKey(e.target.value);
         });
 
+        // API Key Visibility Toggle
+        document.getElementById('toggleApiKeyBtn').addEventListener('click', () => {
+            const input = document.getElementById('apiKeyInput');
+            const type = input.type === 'password' ? 'text' : 'password';
+            input.type = type;
+        });
+
         // Verify API Key button
         document.getElementById('verifyApiKeyBtn').addEventListener('click', () => {
             this.verifyApiKey();
