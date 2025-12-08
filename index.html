@@ -55,8 +55,14 @@
 
       <div class="form-group" style="margin-top: 1.5rem;">
         <label for="clientIdInput">2. OAuth Client ID (for Google Sheets)</label>
-        <input type="text" id="clientIdInput" placeholder="YOUR_CLIENT_ID.apps.googleusercontent.com"
-          autocomplete="off">
+        <div class="input-wrapper">
+          <input type="password" id="clientIdInput" placeholder="YOUR_CLIENT_ID.apps.googleusercontent.com"
+            autocomplete="off">
+          <button id="toggleClientIdBtn" class="input-icon-btn" title="Toggle visibility"
+            aria-label="Toggle Client ID visibility">
+            👁️
+          </button>
+        </div>
         <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
           Required for writing to Sheets. Create an "OAuth Client ID" (Web application) in <a
             href="https://console.cloud.google.com/apis/credentials" target="_blank"

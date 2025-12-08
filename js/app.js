@@ -38,6 +38,13 @@ class StatementConsolidatorApp {
             input.type = type;
         });
 
+        // Client ID Visibility Toggle
+        document.getElementById('toggleClientIdBtn').addEventListener('click', () => {
+            const input = document.getElementById('clientIdInput');
+            const type = input.type === 'password' ? 'text' : 'password';
+            input.type = type;
+        });
+
         // Initialize Token Client if Client ID exists
         const clientId = localStorage.getItem(CONFIG.STORAGE_KEYS.CLIENT_ID);
         if (clientId) {
