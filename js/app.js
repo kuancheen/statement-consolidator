@@ -134,17 +134,18 @@ class StatementConsolidatorApp {
         }
 
         // 2. Client ID
-        // 2. Client ID
         const clientId = localStorage.getItem(CONFIG.STORAGE_KEYS.CLIENT_ID);
         if (clientId) {
-            // Always populate the input first so user sees it
             document.getElementById('clientIdInput').value = clientId;
 
-            // Try to initialize GSI
+            // Show badge if both exist
+            if (savedKey) {
+                document.getElementById('credentialsSuccessBadge').classList.remove('hidden');
+            }
+
             try {
                 if (typeof google === 'undefined' || !google.accounts) {
-                    console.warn('Google Identity Services not loaded yet. OAuth init deferred.');
-                    // Retry later or let user click Connect which checks again
+                    console.warn('GSI not loaded. Deferred.');
                     return;
                 }
                 this.sheetsAPI.initTokenClient(clientId);
@@ -353,10 +354,11 @@ class StatementConsolidatorApp {
                     <select class="file-account-select" onchange="app.updateFileAccount('${fileObj.id}', this.value)">
                         <option value="">Select Account...</option>
                         ${options}
+                        <option value="_NEW_">+ Create New Account</option>
                     </select>
                  `;
             } else if (fileObj.status === 'pending') {
-                accountSelectHtml = `<span class="file-meta">Waiting...</span>`;
+                accountSelectHtml = ``; // Removed "Waiting..." text
             }
 
             item.innerHTML = `
@@ -449,7 +451,30 @@ class StatementConsolidatorApp {
     }
 
     // Update assigned account manually
-    updateFileAccount(id, sheetTitle) {
+    async updateFileAccount(id, sheetTitle) {
+        if (sheetTitle === '_NEW_') {
+            const accountName = prompt('Enter new account name (without @):');
+            if (accountName) {
+                try {
+                    this.showStatus('Creating account sheet...', 'info');
+                    const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
+
+                    // Refresh and assign
+                    this.accountSheets = await this.sheetsAPI.getAccountSheets();
+                    this.updateAccountSheetsList(); // Updates main dropdown
+
+                    const newSheet = this.accountSheets.find(s => s.title === newTitle);
+                    this.fileQueue.setAccount(id, newSheet);
+                    this.showStatus(`Created ${accountName}!`, 'success');
+                } catch (e) {
+                    this.showStatus(`Error creating sheet: ${e.message}`, 'error');
+                }
+            }
+            // Always re-render to reflect new list or cancel
+            this.renderFileQueue();
+            return;
+        }
+
         const sheet = this.accountSheets.find(s => s.title === sheetTitle);
         this.fileQueue.setAccount(id, sheet);
     }

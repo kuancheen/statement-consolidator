@@ -687,7 +687,7 @@ select.error {
 .file-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   margin-top: 10px;
   background: var(--glass-border);
   border: 1px solid var(--glass-border);
