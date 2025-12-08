@@ -2,13 +2,21 @@
 // Version: 0.1.0 (Beta)
 const CONFIG = {
     // App version
-    VERSION: '0.2.4',
-    VERSION_NAME: 'Beta',
+    VERSION: '0.3.0',
+    VERSION_NAME: 'Beta (OAuth)',
 
     // Google Sheets API
     SHEETS_API_BASE: 'https://sheets.googleapis.com/v4/spreadsheets',
-    SHEETS_API_KEY: null, // Will use same key as Gemini (Google AI API key works for both)
 
+    // OAuth Scopes
+    SCOPES: 'https://www.googleapis.com/auth/spreadsheets',
+
+    // Local Storage Keys
+    STORAGE_KEYS: {
+        API_KEY: 'sc_api_key',
+        CLIENT_ID: 'sc_client_id',
+        LAST_SHEET_ID: 'sc_last_sheet_id'
+    },
     // Gemini AI API
     GEMINI_API_BASE: 'https://generativelanguage.googleapis.com/v1beta/models',
     GEMINI_MODEL: 'gemini-2.0-flash',

@@ -21,6 +21,7 @@ class StatementConsolidatorApp {
         this.loadSavedApiKey();
         this.loadLastSheet();
         this.displayVersion();
+        this.updateAuthUI();
     }
 
     // Setup event listeners
@@ -37,14 +38,41 @@ class StatementConsolidatorApp {
             input.type = type;
         });
 
-        // Verify API Key button
-        document.getElementById('verifyApiKeyBtn').addEventListener('click', () => {
-            this.verifyApiKey();
+        // Initialize Token Client if Client ID exists
+        const clientId = localStorage.getItem(CONFIG.STORAGE_KEYS.CLIENT_ID);
+        if (clientId) {
+            try {
+                this.sheetsAPI.initTokenClient(clientId);
+                document.getElementById('clientIdInput').value = clientId;
+            } catch (e) {
+                console.error('Failed to init token client', e);
+            }
+        }
+
+        // Credentials Save
+        document.getElementById('saveCredentialsBtn').addEventListener('click', () => {
+            this.saveCredentials();
         });
 
-        // Sheet connection
+        // Sign In Button (Dynamic) logic handled in render/update, 
+        // but we need a listener for the button we expect to exist.
+        // Or we inject it.
+
         document.getElementById('connectSheetBtn').addEventListener('click', () => {
-            this.connectToSheet();
+            if (!this.sheetsAPI.isAuthorized()) {
+                this.sheetsAPI.requestAccessToken();
+            } else {
+                this.connectToSheet();
+            }
+        });
+
+        // Listen for auth success
+        document.addEventListener('auth-success', () => {
+            this.showStatus('Signed in with Google!', 'success');
+            // If we were trying to connect, retry?
+            const sheetUrl = document.getElementById('sheetUrlInput').value.trim();
+            if (sheetUrl) this.connectToSheet();
+            this.updateAuthUI();
         });
 
         // File upload
@@ -123,71 +151,57 @@ class StatementConsolidatorApp {
         }
     }
 
-    // Verify API key
-    async verifyApiKey() {
-        const key = document.getElementById('apiKeyInput').value.trim();
+    // Save Credentials (API Key & Client ID)
+    saveCredentials() {
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        const clientId = document.getElementById('clientIdInput').value.trim();
 
-        if (!key) {
-            this.showFieldError('apiKeyInput', 'Please enter an API key first');
+        if (!apiKey) {
+            this.showFieldError('apiKeyInput', 'Please enter API Key');
+            return;
+        }
+        if (!clientId) {
+            this.showFieldError('clientIdInput', 'Please enter Client ID');
             return;
         }
 
-        const verifyBtn = document.getElementById('verifyApiKeyBtn');
-        const originalText = verifyBtn.textContent;
-        verifyBtn.disabled = true;
-        verifyBtn.textContent = 'Testing...';
+        // Save API Key
+        this.saveApiKey(apiKey, false);
 
+        // Save Client ID
+        localStorage.setItem(CONFIG.STORAGE_KEYS.CLIENT_ID, clientId);
+
+        // Init Token Client
         try {
-            // Test Gemini AI API
-            const geminiResponse = await fetch(
-                `${CONFIG.GEMINI_API_BASE}/${CONFIG.GEMINI_MODEL}:generateContent?key=${key}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: 'Test' }] }]
-                    })
-                }
-            );
+            this.sheetsAPI.initTokenClient(clientId);
+            this.showFieldStatus('saveCredentialsBtn', 'Credentials saved & initialized!', 'success');
 
-            const geminiData = await geminiResponse.json();
+            // Auto-trigger auth if needed? No, let user choose when to sign in.
 
-            if (!geminiResponse.ok) {
-                if (geminiData.error?.code === 429) {
-                    throw new Error('Gemini API error: Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.');
-                }
-                throw new Error(geminiData.error?.message || 'Gemini API test failed');
-            }
+        } catch (e) {
+            this.showStatus('Error initializing OAuth: ' + e.message, 'error');
+        }
+    }
 
-            // Test Google Sheets API
-            const sheetsResponse = await fetch(
-                `https://sheets.googleapis.com/v4/spreadsheets/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms?fields=sheets.properties&key=${key}`,
-                { method: 'GET' }
-            );
-
-            const sheetsData = await sheetsResponse.json();
-
-            if (!sheetsResponse.ok) {
-                if (sheetsData.error?.code === 403 && sheetsData.error?.message?.includes('has not been used')) {
-                    throw new Error(
-                        'Google Sheets API is not enabled. Enable it at: ' +
-                        'https://console.developers.google.com/apis/api/sheets.googleapis.com/overview?project=' +
-                        sheetsData.error.details?.[0]?.metadata?.consumer?.replace('projects/', '')
-                    );
-                }
-                throw new Error(sheetsData.error?.message || 'Google Sheets API test failed');
-            }
-
-            // Both tests passed
-            this.showFieldStatus('apiKeyInput', '✓ API key verified!', 'success');
-            // Check if we have a key already saved to avoid redundant saves if unchanged, or just save
-            this.saveApiKey(key, false);
-
-        } catch (error) {
-            this.showFieldError('apiKeyInput', error.message);
-        } finally {
-            verifyBtn.disabled = false;
-            verifyBtn.textContent = originalText;
+    // Update Auth UI state
+    updateAuthUI() {
+        const btn = document.getElementById('connectSheetBtn');
+        if (this.sheetsAPI.isAuthorized()) {
+            btn.textContent = 'Connect/Refresh Sheet';
+            btn.classList.add('btn-primary');
+            btn.classList.remove('btn-google');
+        } else {
+            btn.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"></path>
+                <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.836.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"></path>
+                <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"></path>
+                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.159 6.656 3.58 9 3.58z" fill="#EA4335"></path>
+              </svg>
+              Sign in with Google to Connect
+            `;
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-google');
         }
     }
 

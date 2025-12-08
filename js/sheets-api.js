@@ -1,23 +1,49 @@
-// Google Sheets API Integration
+// Google Sheets API Integration (OAuth2)
 class SheetsAPI {
     constructor() {
         this.sheetId = null;
         this.baseUrl = CONFIG.SHEETS_API_BASE;
-        this.apiKey = null;
+        this.tokenClient = null;
+        this.accessToken = null;
+        this.apiKey = null; // Still used for OCR if needed, but separate
     }
 
-    // Set API key
+    // Set API Key (for legacy or hybrid use if needed, mainly for OCR now)
     setApiKey(key) {
         this.apiKey = key;
-        CONFIG.SHEETS_API_KEY = key;
     }
 
-    // Get API key
-    getApiKey() {
-        if (!this.apiKey) {
-            this.apiKey = localStorage.getItem(CONFIG.STORAGE_KEYS.API_KEY);
+    // Initialize Token Client
+    initTokenClient(clientId) {
+        if (!clientId) return;
+
+        this.tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: CONFIG.SCOPES,
+            callback: (tokenResponse) => {
+                if (tokenResponse.error) {
+                    throw tokenResponse;
+                }
+                this.accessToken = tokenResponse.access_token;
+                // Dispatch event or callback to update UI
+                document.dispatchEvent(new CustomEvent('auth-success'));
+            },
+        });
+    }
+
+    // Request Access Token
+    requestAccessToken() {
+        if (!this.tokenClient) {
+            throw new Error('OAuth Client not initialized. Please save Client ID first.');
         }
-        return this.apiKey;
+        // Skip if valid? No, let's just request, GIS handles expiration mostly or we can check expiry.
+        // Simplest is to request if missing.
+        this.tokenClient.requestAccessToken();
+    }
+
+    // Check if authorized
+    isAuthorized() {
+        return !!this.accessToken;
     }
 
     // Extract sheet ID from Google Sheets URL
@@ -35,23 +61,32 @@ class SheetsAPI {
         throw new Error('Invalid Google Sheets URL or ID');
     }
 
-    // Connect to a Google Sheet
+    // Connect to a Google Sheet (Read Metadata)
     async connect(sheetUrl) {
         try {
             this.sheetId = this.extractSheetId(sheetUrl);
 
-            const apiKey = this.getApiKey();
-            if (!apiKey) {
-                throw new Error('API key not set. Please enter your Google AI API key first.');
+            // Ensure we have access token
+            if (!this.accessToken) {
+                throw new Error('Authentication required. Please sign in with Google.');
             }
 
-            // Test connection by fetching sheet metadata
+            // Fetch sheet metadata
             const response = await fetch(
-                `${this.baseUrl}/${this.sheetId}?fields=sheets.properties&key=${apiKey}`,
-                { method: 'GET' }
+                `${this.baseUrl}/${this.sheetId}?fields=sheets.properties`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${this.accessToken}`
+                    }
+                }
             );
 
             if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    // Token might be expired
+                    throw new Error('Auth Error');
+                }
                 throw new Error(`Failed to connect: ${response.statusText}`);
             }
 
@@ -63,25 +98,28 @@ class SheetsAPI {
             return data.sheets || [];
         } catch (error) {
             console.error('Connection error:', error);
-            throw new Error('Failed to connect to Google Sheet. Make sure it\'s publicly editable.');
+            if (error.message === 'Auth Error') {
+                // Trigger re-auth flow?
+                throw new Error('Access expired or denied. Please Sign In again.');
+            }
+            throw new Error('Failed to connect to Google Sheet. Ensure you have access.');
         }
     }
 
     // Get all sheets with @ prefix
     async getAccountSheets() {
-        if (!this.sheetId) {
-            throw new Error('Not connected to a sheet');
-        }
+        if (!this.sheetId) throw new Error('Not connected to a sheet');
+        if (!this.accessToken) throw new Error('Auth required');
 
-        const apiKey = this.getApiKey();
         const response = await fetch(
-            `${this.baseUrl}/${this.sheetId}?fields=sheets.properties&key=${apiKey}`,
-            { method: 'GET' }
+            `${this.baseUrl}/${this.sheetId}?fields=sheets.properties`,
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${this.accessToken}` }
+            }
         );
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch sheets');
-        }
+        if (!response.ok) throw new Error('Failed to fetch sheets');
 
         const data = await response.json();
         const allSheets = data.sheets || [];
@@ -93,26 +131,25 @@ class SheetsAPI {
             .map(props => ({
                 id: props.sheetId,
                 title: props.title,
-                displayName: props.title.substring(1) // Remove @ prefix for display
+                displayName: props.title.substring(1)
             }));
     }
 
     // Read existing transactions from a sheet
     async readTransactions(sheetName) {
-        if (!this.sheetId) {
-            throw new Error('Not connected to a sheet');
-        }
+        if (!this.sheetId) throw new Error('Not connected to a sheet');
+        if (!this.accessToken) throw new Error('Auth required');
 
-        const apiKey = this.getApiKey();
-        const range = `${sheetName}!A:D`; // Date, Description, Credit, Debit
+        const range = `${sheetName}!A:D`;
         const response = await fetch(
-            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}?key=${apiKey}`,
-            { method: 'GET' }
+            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}`,
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${this.accessToken}` }
+            }
         );
 
-        if (!response.ok) {
-            throw new Error('Failed to read transactions');
-        }
+        if (!response.ok) throw new Error('Failed to read transactions');
 
         const data = await response.json();
         const rows = data.values || [];
@@ -123,7 +160,7 @@ class SheetsAPI {
         const transactions = [];
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            if (row.length >= 2) { // At least date and description
+            if (row.length >= 2) {
                 transactions.push({
                     date: row[0] || '',
                     description: row[1] || '',
@@ -138,11 +175,9 @@ class SheetsAPI {
 
     // Append new transactions to a sheet
     async appendTransactions(sheetName, transactions) {
-        if (!this.sheetId) {
-            throw new Error('Not connected to a sheet');
-        }
+        if (!this.sheetId) throw new Error('Not connected to a sheet');
+        if (!this.accessToken) throw new Error('Auth required');
 
-        // Convert transactions to rows
         const rows = transactions.map(t => [
             t.date,
             t.description,
@@ -150,18 +185,16 @@ class SheetsAPI {
             t.debit || ''
         ]);
 
-        const apiKey = this.getApiKey();
         const range = `${sheetName}!A:D`;
         const response = await fetch(
-            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&key=${apiKey}`,
+            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.accessToken}`
                 },
-                body: JSON.stringify({
-                    values: rows
-                })
+                body: JSON.stringify({ values: rows })
             }
         );
 
@@ -175,36 +208,29 @@ class SheetsAPI {
 
     // Create a new account sheet
     async createAccountSheet(accountName) {
-        if (!this.sheetId) {
-            throw new Error('Not connected to a sheet');
-        }
+        if (!this.sheetId) throw new Error('Not connected to a sheet');
+        if (!this.accessToken) throw new Error('Auth required');
 
-        const apiKey = this.getApiKey();
         const sheetTitle = `${CONFIG.ACCOUNT_SHEET_PREFIX}${accountName}`;
 
         // Create the sheet
         const response = await fetch(
-            `${this.baseUrl}/${this.sheetId}:batchUpdate?key=${apiKey}`,
+            `${this.baseUrl}/${this.sheetId}:batchUpdate`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.accessToken}`
                 },
                 body: JSON.stringify({
                     requests: [{
-                        addSheet: {
-                            properties: {
-                                title: sheetTitle
-                            }
-                        }
+                        addSheet: { properties: { title: sheetTitle } }
                     }]
                 })
             }
         );
 
-        if (!response.ok) {
-            throw new Error('Failed to create sheet');
-        }
+        if (!response.ok) throw new Error('Failed to create sheet');
 
         // Add headers
         const headers = [
@@ -215,15 +241,14 @@ class SheetsAPI {
         ];
 
         await fetch(
-            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:D1?valueInputOption=USER_ENTERED&key=${apiKey}`,
+            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:D1?valueInputOption=USER_ENTERED`,
             {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.accessToken}`
                 },
-                body: JSON.stringify({
-                    values: [headers]
-                })
+                body: JSON.stringify({ values: [headers] })
             }
         );
 

@@ -4,6 +4,16 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.0] - 2025-12-09
+
+### Added
+- **OAuth2 Integration:** Implemented secure "Sign in with Google" for Google Sheets access. This replaces the insecure API Key method.
+- **Client ID Configuration:** Added setup fields for users to input their own OAuth Client ID.
+- **Write Permissions:** App can now write directly to regular Google Sheets (no longer requires "Public Edit" link).
+
+### Changed
+- **Config:** Updated version to v0.3.0 Beta (OAuth).
+- **UI:** Replaced "API Key Verification" with a Credentials Initialization step.
 ## [0.2.4] - 2025-12-09
 
 ### Added

@@ -810,3 +810,18 @@ select.error {
 #previewSection {
   /* We might reuse the structure but inject it into the file item */
 }
+
+/* Auth Button Styles */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+}
+.btn-google:hover {
+  background-color: #f8f9fa;
+  border-color: #ccc;
+}

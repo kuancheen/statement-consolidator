@@ -18,6 +18,8 @@
 
   <!-- Config -->
   <script src="config.js"></script>
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -33,11 +35,11 @@
     <!-- Status Message -->
     <div id="statusMessage" class="status-message hidden"></div>
 
-    <!-- Step 1: API Key Setup -->
+    <!-- Step 1: API Key & Client ID Setup -->
     <section class="card">
-      <h2 class="card-title">🔑 Step 1: API Key Setup</h2>
+      <h2 class="card-title">🔑 Step 1: Setup Credentials</h2>
       <div class="form-group">
-        <label for="apiKeyInput">Google AI API Key</label>
+        <label for="apiKeyInput">1. Google AI API Key (for Gemini OCR)</label>
         <div class="input-wrapper">
           <input type="password" id="apiKeyInput" placeholder="Enter your Google AI API key" autocomplete="off">
           <button id="toggleApiKeyBtn" class="input-icon-btn" title="Toggle visibility"
@@ -46,17 +48,28 @@
           </button>
         </div>
         <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
-          Get your free API key from
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary-light);">
-            Google AI Studio
-          </a>
+          Required for reading PDFs and images. Get it from <a href="https://aistudio.google.com/app/apikey"
+            target="_blank" style="color: var(--primary-light);">Google AI Studio</a>.
         </p>
-        <br>
-        <button id="verifyApiKeyBtn" class="btn btn-primary">
-          Test & Verify API Key
-        </button>
-        <strong>Note:</strong> This key is used for both AI OCR (Gemini) and Google Sheets access.
       </div>
+
+      <div class="form-group" style="margin-top: 1.5rem;">
+        <label for="clientIdInput">2. OAuth Client ID (for Google Sheets)</label>
+        <input type="text" id="clientIdInput" placeholder="YOUR_CLIENT_ID.apps.googleusercontent.com"
+          autocomplete="off">
+        <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+          Required for writing to Sheets. Create an "OAuth Client ID" (Web application) in <a
+            href="https://console.cloud.google.com/apis/credentials" target="_blank"
+            style="color: var(--primary-light);">Google Cloud Console</a>.
+          <br>Add <code>http://127.0.0.1:5500</code> (or your domain) to "Authorized JavaScript origins".
+        </p>
+      </div>
+
+      <br>
+      <button id="saveCredentialsBtn" class="btn btn-primary">
+        Save & Initialize
+      </button>
+      <div id="credentialsStatus" style="margin-top: 10px;"></div>
     </section>
 
     <!-- Step 2: Connect to Google Sheet -->
