@@ -4,6 +4,18 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.1.4] - 2025-12-09
+
+### Improved
+- Step-aware inline status messages (Step 2 & 3)
+- API key verification success message is clearer
+- Better error handling for Gemini API quota exhaustion (429) errors with helpful links
+- File upload feedback is now inline instead of global status
+
+### Fixed
+- Fixed an issue where API key verification success message was overwritten
+- Improved internal code structure for file processing
+
 ## [0.1.3] - 2025-12-09
 
 ### Added

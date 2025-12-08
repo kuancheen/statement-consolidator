@@ -95,7 +95,7 @@ class StatementConsolidatorApp {
     }
 
     // Save API key
-    saveApiKey(key) {
+    saveApiKey(key, showMessage = true) {
         if (!key || key.trim() === '') {
             this.showFieldError('apiKeyInput', 'Please enter an API key');
             return;
@@ -103,7 +103,10 @@ class StatementConsolidatorApp {
 
         this.ocrService.setApiKey(key);
         this.sheetsAPI.setApiKey(key);
-        this.showFieldStatus('apiKeyInput', 'API key saved ✓', 'success');
+
+        if (showMessage) {
+            this.showFieldStatus('apiKeyInput', 'API key saved locally ✓', 'success');
+        }
     }
 
     // Verify API key
@@ -137,7 +140,7 @@ class StatementConsolidatorApp {
 
             if (!geminiResponse.ok) {
                 if (geminiData.error?.code === 429) {
-                    throw new Error('API quota exceeded. Please wait or check your quota at https://ai.dev/usage');
+                    throw new Error('Gemini API error: Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.');
                 }
                 throw new Error(geminiData.error?.message || 'Gemini API test failed');
             }
@@ -162,8 +165,9 @@ class StatementConsolidatorApp {
             }
 
             // Both tests passed
-            this.showFieldStatus('apiKeyInput', '✓ API key verified! Both Gemini AI and Google Sheets APIs are working.', 'success');
-            this.saveApiKey(key);
+            this.showFieldStatus('apiKeyInput', '✓ API key verified!', 'success');
+            // Check if we have a key already saved to avoid redundant saves if unchanged, or just save
+            this.saveApiKey(key, false);
 
         } catch (error) {
             this.showFieldError('apiKeyInput', error.message);
@@ -194,20 +198,20 @@ class StatementConsolidatorApp {
         const sheetUrl = document.getElementById('sheetUrlInput').value.trim();
 
         if (!sheetUrl) {
-            this.showStatus('Please enter a Google Sheet URL', 'error');
+            this.showFieldError('sheetUrlInput', 'Please enter a Google Sheet URL');
             return;
         }
 
         try {
-            this.showStatus('Connecting to sheet...', 'info');
+            this.showFieldStatus('sheetUrlInput', 'Connecting to sheet...', 'info');
 
             await this.sheetsAPI.connect(sheetUrl);
             this.accountSheets = await this.sheetsAPI.getAccountSheets();
 
             if (this.accountSheets.length === 0) {
-                this.showStatus('No account sheets found. Create sheets with @ prefix (e.g., @DBS Savings)', 'warning');
+                this.showFieldStatus('sheetUrlInput', 'No account sheets found. Create sheets with @ prefix (e.g., @DBS Savings)', 'warning');
             } else {
-                this.showStatus(`Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
+                this.showFieldStatus('sheetUrlInput', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
                 document.getElementById('uploadSection').classList.remove('hidden');
             }
 
@@ -235,17 +239,17 @@ class StatementConsolidatorApp {
     async handleFileUpload(file) {
         // Validate file
         if (!CONFIG.UPLOAD.ACCEPTED_TYPES.includes(file.type)) {
-            this.showStatus('Invalid file type. Please upload PDF or image files.', 'error');
+            this.showFieldError('dropZone', 'Invalid file type. Please upload PDF or image files.');
             return;
         }
 
         if (file.size > CONFIG.UPLOAD.MAX_FILE_SIZE) {
-            this.showStatus('File too large. Maximum size is 10MB.', 'error');
+            this.showFieldError('dropZone', 'File too large. Maximum size is 10MB.');
             return;
         }
 
         if (!this.ocrService.getApiKey()) {
-            this.showStatus('Please enter your Gemini API key first', 'error');
+            this.showFieldError('dropZone', 'Please enter your Gemini API key first');
             return;
         }
 
@@ -263,7 +267,7 @@ class StatementConsolidatorApp {
     // Process uploaded file
     async processFile(file) {
         try {
-            this.showStatus('Extracting transactions with AI...', 'info');
+            this.showFieldStatus('dropZone', 'Extracting transactions with AI...', 'info');
             document.getElementById('processingIndicator').classList.remove('hidden');
 
             // Extract transactions using OCR
@@ -272,11 +276,11 @@ class StatementConsolidatorApp {
             document.getElementById('processingIndicator').classList.add('hidden');
 
             if (!this.extractedData.transactions || this.extractedData.transactions.length === 0) {
-                this.showStatus('No transactions found in the document', 'warning');
+                this.showFieldStatus('dropZone', 'No transactions found in the document', 'warning');
                 return;
             }
 
-            this.showStatus(`Extracted ${this.extractedData.transactions.length} transaction(s)`, 'success');
+            this.showFieldStatus('dropZone', `Extracted ${this.extractedData.transactions.length} transaction(s)`, 'success');
 
             // Suggest account sheet
             const suggestedSheet = this.ocrService.suggestAccountSheet(
@@ -288,7 +292,13 @@ class StatementConsolidatorApp {
 
         } catch (error) {
             document.getElementById('processingIndicator').classList.add('hidden');
-            this.showStatus(`Error: ${error.message}`, 'error');
+            let errorMessage = error.message;
+
+            if (errorMessage.includes('429') || errorMessage.includes('Resource exhausted')) {
+                errorMessage = 'Gemini API error: Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.';
+            }
+
+            this.showFieldError('dropZone', errorMessage);
             console.error(error);
         }
     }
