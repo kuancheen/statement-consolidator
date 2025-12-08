@@ -1,0 +1,90 @@
+# Changelog
+
+All notable changes to the Statement Consolidator project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.1.2] - 2025-12-08
+
+### Added
+- Close button (×) on inline error and status messages for manual dismissal
+- Better API key restriction detection with specific error messages
+
+### Changed
+- Error and status messages no longer auto-dismiss
+- Users can now manually close messages by clicking the × button
+- Improved error message layout with flexbox
+
+### Fixed
+- API key restriction errors now show helpful guidance
+- Better detection of blocked API services
+
+## [0.1.1] - 2025-12-08
+
+### Added
+- API key verification feature with "Test & Verify API Key" button
+- Detailed error messages for API key issues (quota exceeded, API not enabled, etc.)
+- Inline error messages for form fields instead of top-level notifications
+- Automatic version display in footer
+
+### Fixed
+- Google Sheets API now requires API key parameter for all requests
+- Updated Gemini model from `gemini-1.5-flash` to `gemini-2.0-flash` (current available version)
+- Unified API key storage for both Gemini and Google Sheets APIs
+- Improved error handling with specific guidance for common issues
+
+### Changed
+- API key label updated from "Gemini API Key" to "Google AI API Key" for clarity
+- Error messages now appear inline below relevant fields with visual feedback
+- Success messages auto-dismiss after 3-5 seconds
+
+
+## [0.1.0] - 2025-12-08
+
+### Added
+- Initial beta release of Statement Consolidator
+- AI-powered OCR using Gemini 1.5 Flash for transaction extraction
+- Google Sheets integration with publicly editable sheets
+- Account sheet detection using @ prefix identifier
+- Intelligent deduplication based on date, amount, and description
+- Fuzzy matching with Levenshtein distance algorithm (85% threshold)
+- Smart account matching with user confirmation
+- Drag & drop file upload for PDFs and images (max 10MB)
+- Modern glassmorphic UI with dark theme
+- Responsive design for mobile and desktop
+- Transaction preview before import
+- Support for bank accounts, credit cards, and e-wallets
+- Create new account sheets on-the-fly
+- Local storage for API key and last used sheet
+- Privacy-first design - all processing in browser
+- Comprehensive error handling and user feedback
+- Loading states and animations
+
+### Technical Details
+- Standalone HTML/CSS/JavaScript web app
+- No backend required
+- Modular architecture with separate components:
+  - Google Sheets API integration
+  - OCR service with Gemini AI
+  - Deduplication engine
+  - Main application controller
+- Configuration file for easy customization
+- Complete documentation and README
+
+### Known Limitations
+- Requires Gemini API key (free tier available)
+- Google Sheet must be publicly editable
+- Large files (>10MB) not supported
+- Single file processing only (no batch upload)
+- No OAuth authentication (planned for future)
+
+## [Unreleased]
+
+### Planned Features
+- OAuth authentication for Google Sheets
+- Batch file upload
+- Statement templates for common banks
+- Export to CSV/Excel
+- Multi-currency support
+- Analytics dashboard
+- Receipt scanning support

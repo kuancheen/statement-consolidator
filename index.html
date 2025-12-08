@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statement Consolidator - AI-Powered Financial Statement Manager</title>
+  <meta name="description"
+    content="Consolidate bank, credit card, and e-wallet statements into Google Sheets with AI-powered OCR and intelligent deduplication">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Config -->
+  <script src="config.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>💰 Statement Consolidator</h1>
+      <p class="subtitle">
+        AI-powered financial statement consolidation with intelligent deduplication
+      </p>
+    </header>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="status-message hidden"></div>
+
+    <!-- Step 1: API Key Setup -->
+    <section class="card">
+      <h2 class="card-title">🔑 Step 1: API Key Setup</h2>
+      <div class="form-group">
+        <label for="apiKeyInput">Google AI API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="Enter your Google AI API key" autocomplete="off">
+        <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+          Get your free API key from
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary-light);">
+            Google AI Studio
+          </a>
+        </p>
+          <br>
+      <button id="verifyApiKeyBtn" class="btn btn-primary">
+        Test & Verify API Key
+      </button>
+          <strong>Note:</strong> This key is used for both AI OCR (Gemini) and Google Sheets access.
+      </div>
+    </section>
+
+    <!-- Step 2: Connect to Google Sheet -->
+    <section class="card">
+      <h2 class="card-title">📊 Step 2: Connect to Google Sheet</h2>
+      <div class="form-group">
+        <label for="sheetUrlInput">Google Sheet URL or ID</label>
+        <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/...">
+        <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+          Make sure your sheet is set to "Anyone with link can edit"
+        </p>
+      </div>
+      <button id="connectSheetBtn" class="btn btn-primary">
+        Connect to Sheet
+      </button>
+    </section>
+
+    <!-- Step 3: Upload Statement -->
+    <section id="uploadSection" class="card hidden">
+      <h2 class="card-title">📤 Step 3: Upload Statement</h2>
+
+      <div id="dropZone" class="drop-zone">
+        <div class="drop-zone-icon">📄</div>
+        <div class="drop-zone-text">Drag & drop your statement here</div>
+        <div class="drop-zone-hint">or click to browse (PDF, PNG, JPG - max 10MB)</div>
+      </div>
+
+      <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+
+      <!-- File Info -->
+      <div id="fileInfo" class="file-info hidden">
+        <div class="file-icon">📄</div>
+        <div class="file-details">
+          <div class="file-name" id="fileName"></div>
+          <div class="file-size" id="fileSize"></div>
+        </div>
+      </div>
+
+      <!-- Processing Indicator -->
+      <div id="processingIndicator" class="processing-indicator hidden">
+        <div class="spinner"></div>
+        <span>Processing with AI... This may take a moment.</span>
+      </div>
+
+      <!-- Account Selector -->
+      <div id="accountSelector" class="account-selector hidden">
+        <h3 style="margin-bottom: var(--spacing-md); color: var(--text-primary);">
+          Select Account
+        </h3>
+        <div id="suggestedAccount" class="suggested-account hidden"></div>
+
+        <div class="form-group">
+          <label for="accountSheetSelect">Account Sheet</label>
+          <select id="accountSheetSelect">
+            <option value="">Select an account...</option>
+          </select>
+        </div>
+
+        <div class="button-group">
+          <button id="confirmAccountBtn" class="btn btn-primary">
+            Confirm Account
+          </button>
+          <button id="createNewAccountBtn" class="btn btn-secondary">
+            Create New Account
+          </button>
+          <button id="cancelAccountBtn" class="btn btn-secondary">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: Preview & Import -->
+    <section id="previewSection" class="card hidden">
+      <h2 class="card-title">👀 Step 4: Preview & Import</h2>
+
+      <!-- Stats -->
+      <div id="previewStats" class="preview-stats"></div>
+
+      <!-- Transactions Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Credit</th>
+              <th>Debit</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody">
+            <!-- Transactions will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Import Button -->
+      <div class="text-center mt-2">
+        <button id="importBtn" class="btn btn-success">
+          Import to Google Sheets
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer
+      style="text-align: center; margin-top: var(--spacing-xl); padding: var(--spacing-lg); color: var(--text-muted);">
+      <p>
+        Made with ❤️ for better financial management
+      </p>
+      <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+        All processing happens in your browser. Your data is never sent to external servers.
+      </p>
+      <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">
+        <span id="appVersion">v0.1.2 Beta</span> |
+        <a href="https://github.com/kuancheen/statement-consolidator" target="_blank"
+          style="color: var(--primary-light); text-decoration: none;">
+          GitHub
+        </a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/sheets-api.js"></script>
+  <script src="js/ocr-service.js"></script>
+  <script src="js/deduplication.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
