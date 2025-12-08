@@ -134,12 +134,21 @@ class StatementConsolidatorApp {
         }
 
         // 2. Client ID
+        // 2. Client ID
         const clientId = localStorage.getItem(CONFIG.STORAGE_KEYS.CLIENT_ID);
         if (clientId) {
+            // Always populate the input first so user sees it
+            document.getElementById('clientIdInput').value = clientId;
+
+            // Try to initialize GSI
             try {
+                if (typeof google === 'undefined' || !google.accounts) {
+                    console.warn('Google Identity Services not loaded yet. OAuth init deferred.');
+                    // Retry later or let user click Connect which checks again
+                    return;
+                }
                 this.sheetsAPI.initTokenClient(clientId);
-                document.getElementById('clientIdInput').value = clientId;
-                console.log('Client ID loaded successfully');
+                console.log('Client ID loaded & GSI initialized');
             } catch (e) {
                 console.error('Failed to init token client from storage', e);
             }
