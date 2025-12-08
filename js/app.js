@@ -345,7 +345,7 @@ class StatementConsolidatorApp {
         if (pendingCount === 0 && files.length > 0) {
             btn.textContent = 'Import All Verified';
             btn.classList.add('btn-success');
-            btn.classList.remove('primary-btn');
+            btn.classList.remove('btn-primary');
             // Remove previous listeners to be safe (though assignment overrides onclick)
             btn.onclick = (e) => {
                 e.preventDefault();
@@ -355,7 +355,7 @@ class StatementConsolidatorApp {
         } else {
             btn.textContent = `Process Queue (${pendingCount})`;
             btn.classList.remove('btn-success');
-            btn.classList.add('primary-btn');
+            btn.classList.add('btn-primary');
             btn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
