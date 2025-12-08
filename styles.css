@@ -928,3 +928,26 @@ select.error {
 .file-preview-container .table-container {
     margin: 0 16px 16px 16px; 
 }
+
+/* Super Compact List Style (Table-like) */
+.file-list {
+  gap: 1px !important;
+  margin-top: 0.5rem !important;
+  background: var(--border-color); /* Separator color */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1px; /* Show border around everything */
+  overflow: hidden;
+}
+
+.file-item {
+  border-radius: 0 !important;
+  border: none !important; /* Remove individual borders */
+  background: var(--surface-color); /* Ensure contrast against gap */
+}
+
+/* Hover state overrides */
+.file-item:hover {
+    background: var(--surface-hover);
+    z-index: 1;
+}
