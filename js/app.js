@@ -247,7 +247,7 @@ class StatementConsolidatorApp {
             this.accountSheets = await this.sheetsAPI.getAccountSheets();
 
             if (this.accountSheets.length === 0) {
-                this.showFieldStatus('sheetUrlInput', 'No account sheets found. Create sheets with @ prefix (e.g., @DBS Savings)', 'warning');
+                this.showFieldStatus('sheetUrlInput', 'No account sheets found. Ensure sheets start with @ (e.g., @DBS).', 'error');
                 document.getElementById('accountSheetsList').classList.add('hidden');
             } else {
                 this.showFieldStatus('sheetUrlInput', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
