@@ -426,10 +426,19 @@ class StatementConsolidatorApp {
         this.extractedData = fileObj.data;
         this.selectedSheet = fileObj.accountSheet;
 
-        // Show account selector (just for reuse of logic or direct preview)
-        // Actually, let's just jump to preview if Account is set
         if (this.selectedSheet) {
-            this.confirmAccount(); // Reuses logic to load existing and show preview
+            // Sync main selector so confirmAccount logic works
+            const mainSelect = document.getElementById('accountSheetSelect');
+            if (mainSelect) {
+                mainSelect.value = this.selectedSheet.title;
+            }
+
+            this.confirmAccount();
+
+            // Scroll to preview section
+            setTimeout(() => {
+                document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
         } else {
             this.showStatus('Please select an account first', 'warning');
         }
