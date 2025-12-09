@@ -131,6 +131,7 @@ IMPORTANT:
 
                     // Check for truncation (simple heuristic: does it have closing brace?)
                     if (!generatedText.includes('}')) {
+                        console.error("Truncated AI Response:", generatedText); // Debug logging
                         throw new Error('Unexpected end of JSON input');
                     }
 
@@ -140,6 +141,10 @@ IMPORTANT:
                     if (e.message.includes('Unexpected end of JSON input') && retryCount < 2) {
                         console.warn(`Retry ${retryCount + 1}/2: Truncated response detected.`);
                         return await makeRequest(retryCount + 1);
+                    }
+                    // Log raw text if JSON parse error happens later
+                    if (e.message.includes('JSON')) {
+                        console.error("JSON Error. Raw text was:", typeof data !== 'undefined' ? data : 'N/A');
                     }
                     throw e;
                 }

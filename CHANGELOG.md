@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.23] - 2025-12-09
+
+### Fixed
+- **UI:** Reverted the `flex` layout on the API key input wrapper to `block` (default). This fixes the layout issue where validation messages were appearing on the same line as the input field. The eye icon remains correctly positioned.
+- **Debug:** Added console logging of the raw AI response when "Unexpected end of JSON" errors occur, allowing users to inspect the truncated output in the browser console.
 ## [0.3.22] - 2025-12-09
 
 ### Fixed

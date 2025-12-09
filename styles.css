@@ -836,10 +836,6 @@ select.error {
 .input-wrapper {
   position: relative;
   width: 100%;
-  display: flex;
-  /* Ensure it behaves as a container */
-  align-items: center;
-  /* Vertically center if needed */
 }
 
 .input-wrapper input {
