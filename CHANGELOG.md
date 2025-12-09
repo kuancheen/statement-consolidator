@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.27] - 2025-12-09
+
+### Fixed
+- **UI:** Force-aligned validation messages (like "API Key saved") to always appear at the very bottom of the form group. This solves the layout glitch where messages would squeeze in between the input field and the eye icon button.
 ## [0.3.26] - 2025-12-09
 
 ### Fixed

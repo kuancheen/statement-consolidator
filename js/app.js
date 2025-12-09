@@ -630,13 +630,10 @@ class StatementConsolidatorApp {
         if (type === 'error') input.classList.add('error');
         else input.classList.remove('error');
 
-        // Insert AFTER the input wrapper (if present) or just append
-        const wrapper = input.closest('.input-wrapper');
-        if (wrapper) {
-            wrapper.parentNode.insertBefore(div, wrapper.nextSibling);
-        } else {
-            parent.appendChild(div);
-        }
+        // Always append to the end of the form-group.
+        // This ensures it sits below the input-wrapper (which contains input + button)
+        // rather than trying to insert between siblings.
+        parent.appendChild(div);
     }
     // Show error inline in file item
     showFileError(id, message) {
