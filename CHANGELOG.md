@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.26] - 2025-12-09
+
+### Fixed
+- **OCR:** Switched the AI output format from JSON to **CSV**. This dramatically reduces the number of tokens generated (no repeated keys, brackets, or quotes), effectively quadrupling the capacity for transactions in a single pass and eliminating the "Unexpected end of JSON" error for large files.
+- **UI:** Redesigned the API Key input field layout. The "Eye" visibility toggle is now a distinct button placed *next to* the input field (instead of inside it). This ensures it never overlaps with text or gets displaced by validation messages.
 ## [0.3.25] - 2025-12-09
 
 ### Fixed

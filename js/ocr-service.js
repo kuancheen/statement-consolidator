@@ -51,41 +51,30 @@ class OCRService {
             const base64Data = await this.fileToBase64(file);
             const mimeType = file.type;
 
-            // Prepare the prompt for Gemini
+            // Prepare the prompt for Gemini - Optimized for Token Efficiency (CSV)
             const prompt = `You are a financial transaction extractor. Analyze this bank statement, credit card statement, or e-wallet transaction screenshot and extract ALL transactions.
 
-For each transaction, extract:
-1. Date (in YYYY-MM-DD format if possible, or the original format)
-2. Description (merchant name or transaction details)
-3. Amount (just the number, no currency symbols)
-4. Type (whether it's a credit/deposit or debit/withdrawal)
+Output ONLY a raw CSV format with the following headers:
+Date,Description,Credit,Debit
 
-Also identify:
-- Account type (bank/credit card/e-wallet)
-- Account name or identifier if visible
+Guidelines:
+1. Date: YYYY-MM-DD or original format
+2. Description: Merchant name or details (no commas, replace with spaces)
+3. Credit: Amount if money in, else empty
+4. Debit: Amount if money out, else empty
+5. Do NOT include currency symbols
+6. One transaction per line
 
-Return the data in this EXACT JSON format:
-{
-  "accountType": "bank|credit|ewallet",
-  "institutionName": "Bank/Issuer Name (e.g. DBS, Grab, Citi)",
-  "accountName": "Account identifier (e.g. Savings 123, GrabPay)",
-  "transactions": [
-    {
-      "date": "YYYY-MM-DD or original format",
-      "description": "transaction description",
-      "credit": "amount if money in, empty string otherwise",
-      "debit": "amount if money out, empty string otherwise"
-    }
-  ]
-}
+At the very top, before the CSV, output a metadata line in this format:
+METADATA|AccountType|InstitutionName|AccountName
 
-IMPORTANT:
-- Extract ALL transactions visible in the document
-- For credit cards: purchases are debits, payments are credits
-- For banks: deposits are credits, withdrawals are debits
-- For e-wallets: top-ups are credits, payments are debits
-- Return ONLY valid JSON, no additional text
-- If no transactions found, return empty transactions array`;
+Example Output:
+METADATA|bank|DBS|Savings 123
+Date,Description,Credit,Debit
+2023-10-01,Transfer from Savings,,50.00
+2023-10-02,Salary,3000.00,
+
+Extract ALL transactions. Return ONLY valid text.`;
 
             // Retry logic for API calls
             const makeRequest = async (retryCount = 0) => {
@@ -129,23 +118,12 @@ IMPORTANT:
                     const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (!generatedText) throw new Error('No response from Gemini AI');
 
-                    // Check for truncation - Strict check for closing brace at the end
-                    // Use trim() to ignore trailing whitespace/newlines
-                    if (!generatedText.trim().endsWith('}')) {
-                        console.error("Truncated AI Response (No closing brace):", generatedText.slice(-100));
-                        throw new Error('Unexpected end of JSON input');
-                    }
-
                     return generatedText;
 
                 } catch (e) {
-                    if (e.message.includes('Unexpected end of JSON input') && retryCount < 2) {
-                        console.warn(`Retry ${retryCount + 1}/2: Truncated response detected.`);
+                    if (retryCount < 2) {
+                        console.warn(`Retry ${retryCount + 1}/2: API Error or Truncation.`);
                         return await makeRequest(retryCount + 1);
-                    }
-                    // Log raw text if JSON parse error happens later
-                    if (e.message.includes('JSON')) {
-                        console.error("JSON Error. Raw text was:", typeof data !== 'undefined' ? data : 'N/A');
                     }
                     throw e;
                 }
@@ -153,67 +131,49 @@ IMPORTANT:
 
             const generatedText = await makeRequest();
 
-            // Parse JSON from the response
-            const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                throw new Error('Could not extract JSON from AI response');
-            }
-            // Advanced JSON Repair Strategy
-            const iterativeParse = (str) => {
-                let currentStr = str;
-                const maxAttempts = 20; // Prevent infinite loops
+            // PARSE CSV RESPONSE
+            const lines = generatedText.split('\n').map(l => l.trim()).filter(l => l);
+            let accountType = 'unknown';
+            let institutionName = '';
+            let accountName = 'Unknown Account';
+            const transactions = [];
 
-                // Initial Pre-cleanup
-                currentStr = currentStr
-                    .replace(/,\s*]/g, ']')
-                    .replace(/,\s*}/g, '}')
-                    .replace(/```json/g, '')
-                    .replace(/```/g, '')
-                    // Try to fix missing commas between objects first (the regex way)
-                    .replace(/}\s*{/g, '}, {')
-                    .trim();
+            let csvStarted = false;
 
-                // Fallback: remove comments if present
-                currentStr = currentStr.replace(/\/\/.*$/gm, '');
-
-                for (let i = 0; i < maxAttempts; i++) {
-                    try {
-                        return JSON.parse(currentStr);
-                    } catch (e) {
-                        // Extract position using Regex relative to V8 error message format
-                        // "Unexpected token X in JSON at position Y" or "Expected ',' or ']' after array element in JSON at position Y"
-                        const match = e.message.match(/position (\d+)/);
-
-                        if (!match) throw e; // Cannot auto-repair if no position info
-
-                        const pos = parseInt(match[1], 10);
-
-                        // Safety check bounds
-                        if (pos < 0 || pos > currentStr.length) throw e;
-
-                        // Strategy: The error is mostly "Expected ',' or '...'"
-                        // We insert a comma at that position.
-
-                        // logging for debug (optional, but helpful if user reports again)
-                        console.warn(`Attempting JSON repair ${i + 1}/${maxAttempts} at pos ${pos}:`, e.message);
-
-                        const before = currentStr.slice(0, pos);
-                        const after = currentStr.slice(pos);
-
-                        // Heuristic: If we are repairing, usually it's a missing comma.
-                        currentStr = before + ',' + after;
+            for (const line of lines) {
+                if (line.startsWith('METADATA|')) {
+                    const parts = line.split('|');
+                    if (parts.length >= 4) {
+                        accountType = parts[1].trim();
+                        institutionName = parts[2].trim();
+                        accountName = parts[3].trim();
                     }
+                    continue;
                 }
-                throw new Error("Failed to auto-repair JSON after multiple attempts.");
-            };
 
-            const result = iterativeParse(jsonMatch[0]);
+                // Skip header or empty lines
+                if (line.toLowerCase().startsWith('date,description') || !line.includes(',')) {
+                    continue;
+                }
+
+                // Simple CSV parse (handling comma in quotes if AI adds them, but we asked it not to)
+                // We'll assume simple split by comma since we asked to remove commas in description
+                const cols = line.split(',');
+                if (cols.length >= 4) {
+                    transactions.push({
+                        date: cols[0].trim(),
+                        description: cols[1].trim(),
+                        credit: cols[2].trim(),
+                        debit: cols[3].trim()
+                    });
+                }
+            }
 
             return {
-                accountType: result.accountType || 'unknown',
-                institutionName: result.institutionName || '',
-                accountName: result.accountName || 'Unknown Account',
-                transactions: result.transactions || []
+                accountType,
+                institutionName,
+                accountName,
+                transactions
             };
 
         } catch (error) {
