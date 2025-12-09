@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.25] - 2025-12-09
+
+### Fixed
+- **OCR:** Implemented "Advanced Salvage Mode" with a smart bracket balancing algorithm. When JSON is truncated, it now calculates exactly which quotes, brackets, or braces are missing and appends them to form valid JSON, ensuring maximum data recovery for large files.
+- **UI:** Fixed the "pushed down" eye icon issue by modifying the validation message logic. Messages are now inserted *after* the input wrapper (instead of inside it), preventing layout shifts that displaced the absolute-positioned icon.
 ## [0.3.24] - 2025-12-09
 
 ### Fixed

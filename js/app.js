@@ -609,6 +609,35 @@ class StatementConsolidatorApp {
         `;
     }
 
+    // Updated Helper: Show field status
+    showFieldStatus(elementId, type, message) {
+        const input = document.getElementById(elementId);
+        if (!input) return;
+
+        const parent = input.closest('.form-group') || input.parentElement; // Target form-group specifically
+
+        // Remove existing
+        const existing = parent.querySelector('.field-status, .field-error');
+        if (existing) existing.remove();
+
+        const div = document.createElement('div');
+        div.className = type === 'error' ? 'field-error' : `field-status ${type}`;
+        div.innerHTML = `
+            <span>${message}</span>
+            <button class="field-message-close" onclick="this.parentElement.remove()">×</button>
+        `;
+
+        if (type === 'error') input.classList.add('error');
+        else input.classList.remove('error');
+
+        // Insert AFTER the input wrapper (if present) or just append
+        const wrapper = input.closest('.input-wrapper');
+        if (wrapper) {
+            wrapper.parentNode.insertBefore(div, wrapper.nextSibling);
+        } else {
+            parent.appendChild(div);
+        }
+    }
     // Show error inline in file item
     showFileError(id, message) {
         const item = document.getElementById(`item-${id}`);
