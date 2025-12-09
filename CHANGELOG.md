@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.21] - 2025-12-09
+
+### Fixed
+- **OCR:** Implemented an "Iterative Repair" strategy for JSON parsing. If the AI output has syntax errors (like missing commas or broken brackets), the app now uses the error coordinates to surgically insert missing characters and retry parsing up to 20 times. This solves persistent extraction errors on large files.
 ## [0.3.20] - 2025-12-09
 
 ### Fixed

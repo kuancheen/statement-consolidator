@@ -133,34 +133,56 @@ IMPORTANT:
             if (!jsonMatch) {
                 throw new Error('Could not extract JSON from AI response');
             }
-            // Clean and parse JSON using robust repair function
-            const repairJSON = (str) => {
-                let cleaned = str
-                    .replace(/,\s*]/g, ']') // Remove trailing comma in arrays
-                    .replace(/,\s*}/g, '}') // Remove trailing comma in objects
-                    // Fix missing comma between objects in array: } { -> }, {
-                    .replace(/}\s*{/g, '}, {')
-                    // Fix missing comma between array elements if they are string/number (less common but possible)
-                    // .replace(/"\s*"/g, '", "') // Too risky for normal text
-                    // Fix markdown code blocks if matched loosely
+            // Advanced JSON Repair Strategy
+            const iterativeParse = (str) => {
+                let currentStr = str;
+                const maxAttempts = 20; // Prevent infinite loops
+
+                // Initial Pre-cleanup
+                currentStr = currentStr
+                    .replace(/,\s*]/g, ']')
+                    .replace(/,\s*}/g, '}')
                     .replace(/```json/g, '')
                     .replace(/```/g, '')
+                    // Try to fix missing commas between objects first (the regex way)
+                    .replace(/}\s*{/g, '}, {')
                     .trim();
-                return cleaned;
+
+                // Fallback: remove comments if present
+                currentStr = currentStr.replace(/\/\/.*$/gm, '');
+
+                for (let i = 0; i < maxAttempts; i++) {
+                    try {
+                        return JSON.parse(currentStr);
+                    } catch (e) {
+                        // Extract position using Regex relative to V8 error message format
+                        // "Unexpected token X in JSON at position Y" or "Expected ',' or ']' after array element in JSON at position Y"
+                        const match = e.message.match(/position (\d+)/);
+
+                        if (!match) throw e; // Cannot auto-repair if no position info
+
+                        const pos = parseInt(match[1], 10);
+
+                        // Safety check bounds
+                        if (pos < 0 || pos > currentStr.length) throw e;
+
+                        // Strategy: The error is mostly "Expected ',' or '...'"
+                        // We insert a comma at that position.
+
+                        // logging for debug (optional, but helpful if user reports again)
+                        console.warn(`Attempting JSON repair ${i + 1}/${maxAttempts} at pos ${pos}:`, e.message);
+
+                        const before = currentStr.slice(0, pos);
+                        const after = currentStr.slice(pos);
+
+                        // Heuristic: If we are repairing, usually it's a missing comma.
+                        currentStr = before + ',' + after;
+                    }
+                }
+                throw new Error("Failed to auto-repair JSON after multiple attempts.");
             };
 
-            const jsonStr = repairJSON(jsonMatch[0]);
-
-            // Try parse, if fails, might be a more complex issue
-            let result;
-            try {
-                result = JSON.parse(jsonStr);
-            } catch (e) {
-                console.error("First parse attempt failed. Attempting deeper repair...", e);
-                // Fallback: Sometimes Gemini puts comments // ... in JSON
-                const noComments = jsonStr.replace(/\/\/.*$/gm, '');
-                result = JSON.parse(noComments);
-            }
+            const result = iterativeParse(jsonMatch[0]);
 
             return {
                 accountType: result.accountType || 'unknown',
