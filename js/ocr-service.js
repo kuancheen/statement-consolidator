@@ -129,9 +129,10 @@ IMPORTANT:
                     const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (!generatedText) throw new Error('No response from Gemini AI');
 
-                    // Check for truncation (simple heuristic: does it have closing brace?)
-                    if (!generatedText.includes('}')) {
-                        console.error("Truncated AI Response:", generatedText); // Debug logging
+                    // Check for truncation - Strict check for closing brace at the end
+                    // Use trim() to ignore trailing whitespace/newlines
+                    if (!generatedText.trim().endsWith('}')) {
+                        console.error("Truncated AI Response (No closing brace):", generatedText.slice(-100));
                         throw new Error('Unexpected end of JSON input');
                     }
 

@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.24] - 2025-12-09
+
+### Fixed
+- **OCR:** Enhanced long-file stability by strictly checking for a closing brace `}` to detect truncation. If the file is still cut off after retries (max token limit), the app now attempts to "salvage" the data by automatically appending closing brackets (e.g., `]}`), saving the transactions that were successfully extracted instead of failing completely.
 ## [0.3.23] - 2025-12-09
 
 ### Fixed
