@@ -147,7 +147,15 @@ class StatementConsolidatorApp {
         if (savedKey) {
             document.getElementById('apiKeyInput').value = savedKey;
             this.sheetsAPI.setApiKey(savedKey); // Ensure it's set here too
-            this.showStatus('Credentials loaded from storage', 'success');
+            // Show success in specific area
+            const statusDiv = document.getElementById('credentialsStatus');
+            statusDiv.innerHTML = '<div class="field-status success"><span>Credentials saved & initialized!</span></div>';
+
+            // Hide global status if it was shown
+            document.getElementById('statusMessage').classList.add('hidden');
+
+            // Try to init immediately
+            this.updateAuthUI();
         }
 
         // 2. Client ID
@@ -155,9 +163,13 @@ class StatementConsolidatorApp {
         if (clientId) {
             document.getElementById('clientIdInput').value = clientId;
 
-            // Show badge if both exist
+            // Show inline status
             if (savedKey) {
-                document.getElementById('credentialsSuccessBadge').classList.remove('hidden');
+                const statusDiv = document.getElementById('credentialsStatus');
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="field-status success"><span>Credentials loaded from storage ✓</span></div>';
+                    statusDiv.classList.remove('hidden');
+                }
             }
 
             try {

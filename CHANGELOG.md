@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.13] - 2025-12-09
+
+### Changed
+- **UI:** Relocated "Credentials loaded" and status messages to the area immediately below the "Save" button in Step 1, removing them from the header for better context.
 ## [0.3.12] - 2025-12-09
 
 ### Changed
