@@ -2,7 +2,7 @@
 // Version: 0.1.0 (Beta)
 const CONFIG = {
     // App version
-    VERSION: '0.3.21',
+    VERSION: '0.3.22',
     VERSION_NAME: 'Beta (OAuth)',
 
     // Google Sheets API

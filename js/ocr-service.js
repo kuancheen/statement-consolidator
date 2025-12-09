@@ -87,46 +87,65 @@ IMPORTANT:
 - Return ONLY valid JSON, no additional text
 - If no transactions found, return empty transactions array`;
 
-            // Call Gemini API
-            const response = await fetch(
-                `${this.baseUrl}/${this.model}:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                {
-                                    inline_data: {
-                                        mime_type: mimeType,
-                                        data: base64Data
-                                    }
+            // Retry logic for API calls
+            const makeRequest = async (retryCount = 0) => {
+                try {
+                    // Call Gemini API
+                    const response = await fetch(
+                        `${this.baseUrl}/${this.model}:generateContent?key=${apiKey}`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [
+                                        { text: prompt },
+                                        {
+                                            inline_data: {
+                                                mime_type: mimeType,
+                                                data: base64Data
+                                            }
+                                        }
+                                    ]
+                                }],
+                                generationConfig: {
+                                    temperature: 0.1,
+                                    maxOutputTokens: 8192,
                                 }
-                            ]
-                        }],
-                        generationConfig: {
-                            temperature: 0.1,
-                            maxOutputTokens: 8192,
+                            })
                         }
-                    })
+                    );
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Extract text
+                    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!generatedText) throw new Error('No response from Gemini AI');
+
+                    // Check for truncation (simple heuristic: does it have closing brace?)
+                    if (!generatedText.includes('}')) {
+                        throw new Error('Unexpected end of JSON input');
+                    }
+
+                    return generatedText;
+
+                } catch (e) {
+                    if (e.message.includes('Unexpected end of JSON input') && retryCount < 2) {
+                        console.warn(`Retry ${retryCount + 1}/2: Truncated response detected.`);
+                        return await makeRequest(retryCount + 1);
+                    }
+                    throw e;
                 }
-            );
+            };
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
-            }
-
-            const data = await response.json();
-
-            // Extract the generated text
-            const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!generatedText) {
-                throw new Error('No response from Gemini AI');
-            }
+            const generatedText = await makeRequest();
 
             // Parse JSON from the response
             const jsonMatch = generatedText.match(/\{[\s\S]*\}/);

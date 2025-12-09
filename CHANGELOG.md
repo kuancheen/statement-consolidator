@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.22] - 2025-12-09
+
+### Fixed
+- **OCR:** Implemented automatic 2x retry logic when the AI response is truncated (causing "Unexpected end of JSON"), improving stability for large/complex statements.
+- **UI:** Fixed the "Eye" icon alignment in the API key field so it stays inside the input box and doesn't get pushed out by status messages.
 ## [0.3.21] - 2025-12-09
 
 ### Fixed
