@@ -556,10 +556,20 @@ class StatementConsolidatorApp {
         const institutionDisplay = fileObj.data.institutionName ? ` | ${fileObj.data.institutionName}` : '';
 
         const html = `
-            <div class="ocr-meta compact-width" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
-                <div style="display:flex; justify-content:space-between; align-items:center">
-                    <span><strong>Detected:</strong> ${fileObj.data.accountName || 'Unknown'}${institutionDisplay}</span>
-                    <span class="badge" style="background:var(--primary-dark); color:white">${fileObj.data.accountType || 'Unknown'}</span>
+            <div class="ocr-meta compact-width" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; text-align:center;">
+                    <div>
+                         <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Institution</div>
+                         <div style="font-weight:600">${fileObj.data.institutionName || '-'}</div>
+                    </div>
+                    <div>
+                         <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Account Name</div>
+                         <div style="font-weight:600">${fileObj.data.accountName || 'Unknown'}</div>
+                    </div>
+                    <div>
+                         <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Type</div>
+                         <div><span class="badge" style="background:var(--primary-dark); color:white">${fileObj.data.accountType || 'Unknown'}</span></div>
+                    </div>
                 </div>
             </div>
             
