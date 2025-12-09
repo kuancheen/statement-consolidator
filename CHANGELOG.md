@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.14] - 2025-12-09
+
+### Fixed
+- **Error Handling:** Added a friendly error message when the API key is reported as "leaked/revoked", guiding the user to generate a new one immediately.
 ## [0.3.13] - 2025-12-09
 
 ### Changed

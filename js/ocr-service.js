@@ -145,6 +145,9 @@ IMPORTANT:
 
         } catch (error) {
             console.error('OCR extraction error:', error);
+            if (error.message.includes('leaked')) {
+                throw new Error('Your API Key was disabled by Google because it was detected publicly. Please generate a NEW key at aistudio.google.com and update it in Step 1.');
+            }
             throw error;
         }
     }
