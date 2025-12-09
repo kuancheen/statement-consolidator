@@ -67,7 +67,8 @@ Also identify:
 Return the data in this EXACT JSON format:
 {
   "accountType": "bank|credit|ewallet",
-  "accountName": "detected account name",
+  "institutionName": "Bank/Issuer Name (e.g. DBS, Grab, Citi)",
+  "accountName": "Account identifier (e.g. Savings 123, GrabPay)",
   "transactions": [
     {
       "date": "YYYY-MM-DD or original format",
@@ -137,6 +138,7 @@ IMPORTANT:
 
             return {
                 accountType: result.accountType || 'unknown',
+                institutionName: result.institutionName || '',
                 accountName: result.accountName || 'Unknown Account',
                 transactions: result.transactions || []
             };

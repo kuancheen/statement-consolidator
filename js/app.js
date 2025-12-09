@@ -504,72 +504,74 @@ class StatementConsolidatorApp {
         const item = document.getElementById(`item-${id}`);
         const previewContainer = item.querySelector('.file-preview-container');
 
-        // Toggle behavior
+        // Toggle
         const isActive = item.classList.contains('active');
-
-        // Close all others
         document.querySelectorAll('.file-item').forEach(el => {
             el.classList.remove('active');
             el.querySelector('.file-preview-container').innerHTML = '';
         });
 
-        if (isActive) {
-            return; // Just closing
-        }
+        if (isActive) return;
 
-        // Open this one
+        // Open
         item.classList.add('active');
 
         this.selectedSheet = fileObj.accountSheet;
         this.extractedData = fileObj.data;
 
-        if (this.selectedSheet) {
-            previewContainer.innerHTML = '<div class="processing-indicator" style="margin:0"><div class="spinner"></div><span>Loading transactions...</span></div>';
+        // Render Loading
+        previewContainer.innerHTML = '<div class="processing-indicator" style="margin:0"><div class="spinner"></div><span>Preparing preview...</span></div>';
 
-            // Sync main selector (legacy support)
+        // Deduplication Logic (only if sheet selected)
+        let filtered = { unique: fileObj.data.transactions, duplicates: [] };
+
+        if (this.selectedSheet) {
+            // Sync main selector
             const mainSelect = document.getElementById('accountSheetSelect');
             if (mainSelect) mainSelect.value = this.selectedSheet.title;
 
-            // Load existing for deduplication logic
             await this.loadExistingTransactions();
-
-            // Render Inline Table
-            const filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
-
-            // Generate rows
-            const rows = filtered.unique.map(t => this.createTransactionRowHTML(t, false))
-                .concat(filtered.duplicates.map(d => this.createTransactionRowHTML(d.transaction, true)))
-                .join('');
-
-            const html = `
-                <div class="ocr-meta" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <span><strong>Detected Account:</strong> ${fileObj.data.accountName || 'Unknown'}</span>
-                        <span class="badge" style="background:var(--primary-dark); color:white">${fileObj.data.accountType || 'Unknown'}</span>
-                    </div>
-                </div>
-                <div class="preview-stats" style="margin-bottom: 1rem; margin-top: 1rem;">
-                    <div class="stat-item"><span class="stat-label">New</span><span class="stat-value success">${filtered.unique.length}</span></div>
-                    <div class="stat-item"><span class="stat-label">Duplicates</span><span class="stat-value warning">${filtered.duplicates.length}</span></div>
-                </div>
-                 <div class="table-container" style="max-height: 400px; overflow-y: auto;">
-                    <table>
-                        <thead><tr><th>Date</th><th>Description</th><th>Credit</th><th>Debit</th><th>Status</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </div>
-                 <div class="text-center mt-2">
-                    <button class="btn btn-success" onclick="app.importTransactions()">Import This File (Global)</button>
-                 </div>
-            `;
-
-            previewContainer.innerHTML = html;
-
-        } else {
-            // Show inline error
-            this.showFileError(id, 'Please select an account first');
-            item.classList.remove('active');
+            filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
         }
+
+        // Generate Rows
+        const rows = filtered.unique.map(t => this.createTransactionRowHTML(t, false))
+            .concat(filtered.duplicates.map(d => this.createTransactionRowHTML(d.transaction, true)))
+            .join('');
+
+        // Account Display Name
+        const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected (Preview Only)</span>';
+        const institutionDisplay = fileObj.data.institutionName ? ` | ${fileObj.data.institutionName}` : '';
+
+        const html = `
+            <div class="ocr-meta" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <span><strong>Detected:</strong> ${fileObj.data.accountName || 'Unknown'}${institutionDisplay}</span>
+                    <span class="badge" style="background:var(--primary-dark); color:white">${fileObj.data.accountType || 'Unknown'}</span>
+                </div>
+            </div>
+            
+            <div class="preview-stats" style="margin-bottom: 1rem; margin-top: 1rem;">
+                <div class="stat-item"><span class="stat-label">New</span><span class="stat-value success">${filtered.unique.length}</span></div>
+                <div class="stat-item"><span class="stat-label">Duplicates</span><span class="stat-value warning">${filtered.duplicates.length}</span></div>
+                <div class="stat-item"><span class="stat-label">Account</span><span class="stat-value" style="font-size:1rem">${accountDisplay}</span></div>
+            </div>
+
+             <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table>
+                    <thead><tr><th>Date</th><th>Description</th><th>Credit</th><th>Debit</th><th>Status</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+             <div class="text-center mt-2">
+                ${this.selectedSheet ?
+                `<button class="btn btn-success" onclick="app.importTransactions()">Import This File (Global)</button>` :
+                `<button class="btn btn-secondary" disabled title="Select an account to enable import">Select Account to Import</button>`
+            }
+             </div>
+        `;
+
+        previewContainer.innerHTML = html;
     }
 
     // Helper for generating row HTML (since createTransactionRow returns DOM)

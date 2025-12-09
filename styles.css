@@ -406,6 +406,10 @@ select:focus {
   overflow-x: auto;
   border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border);
+  width: 80%;
+  /* Reduced width */
+  margin: 0 auto;
+  /* Center */
 }
 
 table {
@@ -418,19 +422,22 @@ thead {
 }
 
 th {
-  padding: var(--spacing-md);
+  padding: var(--spacing-xs);
+  /* Reduced height */
   text-align: left;
   font-weight: 600;
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 td {
-  padding: var(--spacing-md);
+  padding: var(--spacing-xs);
+  /* Reduced height */
   border-top: 1px solid var(--glass-border);
   color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 tr.duplicate {
