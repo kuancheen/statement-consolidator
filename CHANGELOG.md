@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.28] - 2025-12-09
+
+### Fixed
+- **UI:** Implemented strict DOM placement for validation messages. The code now explicitly locates the `.input-wrapper` and inserts messages *immediately after* it using `wrapper.after()`. This guarantees the message appears below the row of controls, resolving the persistent layout issue. Also added aggressive cleanup to remove any duplicate messages before adding a new one.
 ## [0.3.27] - 2025-12-09
 
 ### Fixed
