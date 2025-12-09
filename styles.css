@@ -227,6 +227,22 @@ select:focus {
   background: #059669;
 }
 
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Drop zone */
 .drop-zone {
   border: 2px dashed var(--glass-border);

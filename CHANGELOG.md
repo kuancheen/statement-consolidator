@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.19] - 2025-12-09
+
+### Fixed
+- **OCR:** Added sanitization to remove trailing commas from AI-generated JSON before parsing, resolving the "Expected ',' or ']' after array element" error.
+- **UI:** Styled the "Remove File" (trash icon) button to be transparent, blending correctly with the list item background.
 ## [0.3.18] - 2025-12-09
 
 ### Changed

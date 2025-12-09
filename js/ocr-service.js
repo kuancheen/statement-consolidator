@@ -133,8 +133,13 @@ IMPORTANT:
             if (!jsonMatch) {
                 throw new Error('Could not extract JSON from AI response');
             }
+            // Clean and parse JSON
+            const jsonStr = jsonMatch[0]
+                .replace(/,\s*]/g, ']') // Remove trailing comma in arrays
+                .replace(/,\s*}/g, '}') // Remove trailing comma in objects
+                .trim();
 
-            const result = JSON.parse(jsonMatch[0]);
+            const result = JSON.parse(jsonStr);
 
             return {
                 accountType: result.accountType || 'unknown',
