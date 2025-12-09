@@ -406,10 +406,6 @@ select:focus {
   overflow-x: auto;
   border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border);
-  width: 80%;
-  /* Reduced width */
-  margin: 0 auto;
-  /* Center */
 }
 
 table {
@@ -511,6 +507,12 @@ tr.duplicate td {
 /* Utility classes */
 .hidden {
   display: none !important;
+}
+
+.compact-width {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .text-center {

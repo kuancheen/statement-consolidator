@@ -556,20 +556,20 @@ class StatementConsolidatorApp {
         const institutionDisplay = fileObj.data.institutionName ? ` | ${fileObj.data.institutionName}` : '';
 
         const html = `
-            <div class="ocr-meta" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
+            <div class="ocr-meta compact-width" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; border: 1px solid var(--glass-border);">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <span><strong>Detected:</strong> ${fileObj.data.accountName || 'Unknown'}${institutionDisplay}</span>
                     <span class="badge" style="background:var(--primary-dark); color:white">${fileObj.data.accountType || 'Unknown'}</span>
                 </div>
             </div>
             
-            <div class="preview-stats" style="margin-bottom: 1rem; margin-top: 1rem;">
+            <div class="preview-stats compact-width" style="margin-bottom: 1rem; margin-top: 1rem;">
                 <div class="stat-item"><span class="stat-label">New</span><span class="stat-value success">${filtered.unique.length}</span></div>
                 <div class="stat-item"><span class="stat-label">Duplicates</span><span class="stat-value warning">${filtered.duplicates.length}</span></div>
                 <div class="stat-item"><span class="stat-label">Account</span><span class="stat-value" style="font-size:1rem">${accountDisplay}</span></div>
             </div>
 
-             <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+             <div class="table-container compact-width" style="max-height: 400px; overflow-y: auto;">
                 <table>
                     <thead><tr><th>Date</th><th>Description</th><th>Credit</th><th>Debit</th><th>Status</th></tr></thead>
                     <tbody>${rows}</tbody>
