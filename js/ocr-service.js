@@ -133,13 +133,34 @@ IMPORTANT:
             if (!jsonMatch) {
                 throw new Error('Could not extract JSON from AI response');
             }
-            // Clean and parse JSON
-            const jsonStr = jsonMatch[0]
-                .replace(/,\s*]/g, ']') // Remove trailing comma in arrays
-                .replace(/,\s*}/g, '}') // Remove trailing comma in objects
-                .trim();
+            // Clean and parse JSON using robust repair function
+            const repairJSON = (str) => {
+                let cleaned = str
+                    .replace(/,\s*]/g, ']') // Remove trailing comma in arrays
+                    .replace(/,\s*}/g, '}') // Remove trailing comma in objects
+                    // Fix missing comma between objects in array: } { -> }, {
+                    .replace(/}\s*{/g, '}, {')
+                    // Fix missing comma between array elements if they are string/number (less common but possible)
+                    // .replace(/"\s*"/g, '", "') // Too risky for normal text
+                    // Fix markdown code blocks if matched loosely
+                    .replace(/```json/g, '')
+                    .replace(/```/g, '')
+                    .trim();
+                return cleaned;
+            };
 
-            const result = JSON.parse(jsonStr);
+            const jsonStr = repairJSON(jsonMatch[0]);
+
+            // Try parse, if fails, might be a more complex issue
+            let result;
+            try {
+                result = JSON.parse(jsonStr);
+            } catch (e) {
+                console.error("First parse attempt failed. Attempting deeper repair...", e);
+                // Fallback: Sometimes Gemini puts comments // ... in JSON
+                const noComments = jsonStr.replace(/\/\/.*$/gm, '');
+                result = JSON.parse(noComments);
+            }
 
             return {
                 accountType: result.accountType || 'unknown',

@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.20] - 2025-12-09
+
+### Fixed
+- **OCR:** Improved JSON sanitization to handle missing commas between array objects (fixing `} {` syntax errors) and strip comments, making imports much more robust against AI formatting glitches.
 ## [0.3.19] - 2025-12-09
 
 ### Fixed
