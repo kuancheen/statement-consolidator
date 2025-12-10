@@ -4,6 +4,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.34] - 2025-12-11
+
+### Changed
+- **UI UX Improvements:**
+    - **Inline Process Status:** The status for "Process Queue" now appears directly below the button for better visibility.
+    - **Prevent Double-Click:** The "Process Queue" button is now disabled while processing to prevent duplicate operations.
+    - **Smart Account Creation:** When creating a new account from a file's dropdown, the new account is now automatically selected for that file immediately.
 ## [0.3.33] - 2025-12-11
 
 ### Changed

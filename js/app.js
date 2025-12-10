@@ -443,7 +443,11 @@ class StatementConsolidatorApp {
         const pending = this.fileQueue.getPendingFiles();
         if (pending.length === 0) return;
 
-        this.showStatus(`Processing ${pending.length} files...`, 'info');
+        const btn = document.getElementById('processAllBtn');
+        if (btn) btn.disabled = true;
+
+        // Use inline status instead of global
+        this.showFieldStatus('processAllBtn', 'processing', `Processing ${pending.length} files...`);
 
         for (const fileObj of pending) {
             try {
@@ -469,7 +473,17 @@ class StatementConsolidatorApp {
             this.renderFileQueue(); // Update UI each step
         }
 
-        this.showStatus('Queue processing complete', 'success');
+        // Processing complete
+        if (btn) btn.disabled = false;
+
+        // Remove processing message or show done
+        this.showFieldStatus('processAllBtn', 'success', 'Queue processing complete');
+
+        // Clear message after 3 seconds
+        setTimeout(() => {
+            const formGroup = btn.closest('.form-group') || btn.parentElement;
+            if (formGroup) formGroup.querySelectorAll('.field-status, .field-error').forEach(el => el.remove());
+        }, 3000);
     }
 
     // Remove file from queue
@@ -487,24 +501,28 @@ class StatementConsolidatorApp {
                     this.showStatus('Creating account sheet...', 'info');
                     const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
 
-                    // Refresh and assign
+                    // Refresh global list
                     this.accountSheets = await this.sheetsAPI.getAccountSheets();
-                    this.updateAccountSheetsList(); // Updates main dropdown
+                    this.updateAccountSheetsList(); // Updates main selector if visible
 
+                    // Assign to THIS file
                     const newSheet = this.accountSheets.find(s => s.title === newTitle);
                     this.fileQueue.setAccount(id, newSheet);
+
                     this.showStatus(`Created ${accountName}!`, 'success');
                 } catch (e) {
                     this.showStatus(`Error creating sheet: ${e.message}`, 'error');
                 }
             }
-            // Always re-render to reflect new list or cancel
+            // Always re-render to reflect new list and selection
             this.renderFileQueue();
             return;
         }
 
         const sheet = this.accountSheets.find(s => s.title === sheetTitle);
         this.fileQueue.setAccount(id, sheet);
+        // Note: No need to explicitly re-render here as the select element's value matches,
+        // but if we wanted to be safe we could. However, standard 'change' event works fine.
     }
 
     // Preview single file (Accordion style)
