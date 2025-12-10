@@ -689,9 +689,13 @@ class StatementConsolidatorApp {
 
         for (const fileObj of readyFiles) {
             try {
-                const filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
-                if (filtered.unique.length > 0) {
-                    await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, filtered.unique);
+                // BYPASS DEDUPLICATION: Upload all transactions directly
+                // const filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
+
+                const transactionsToUpload = fileObj.data.transactions;
+
+                if (transactionsToUpload.length > 0) {
+                    await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, transactionsToUpload);
                     successCount++;
                 }
             } catch (e) {
@@ -750,7 +754,9 @@ class StatementConsolidatorApp {
         this.hideAccountSelector();
 
         // Load existing transactions for deduplication
-        await this.loadExistingTransactions();
+        // Note: Even though we bypass dedup for upload, we might still want to load them 
+        // if we ever want to re-enable it. But for now, we can skip or keep it silent.
+        // await this.loadExistingTransactions(); 
 
         // Show preview
         this.showTransactionPreview();
@@ -783,6 +789,9 @@ class StatementConsolidatorApp {
 
     // Load existing transactions for deduplication
     async loadExistingTransactions() {
+        // Disabled for "Upload All" workflow to save API calls
+        return;
+        /*
         try {
             this.showStatus('Loading existing transactions...', 'info');
 
@@ -794,6 +803,7 @@ class StatementConsolidatorApp {
         } catch (error) {
             this.showStatus(`Warning: Could not load existing transactions: ${error.message}`, 'warning');
         }
+        */
     }
 
     // Show transaction preview
@@ -802,41 +812,27 @@ class StatementConsolidatorApp {
         const tbody = document.getElementById('transactionsTableBody');
         const stats = document.getElementById('previewStats');
 
-        // Filter duplicates
-        const filtered = this.dedupEngine.filterDuplicates(this.extractedData.transactions);
+        // BYPASS DEDUPLICATION: All transactions are treated as new
+        const allTransactions = this.extractedData.transactions;
 
-        // Update stats
+        // Update stats - Simplified
         stats.innerHTML = `
       <div class="stat-item">
-        <span class="stat-label">Total:</span>
-        <span class="stat-value">${this.extractedData.transactions.length}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">New:</span>
-        <span class="stat-value success">${filtered.unique.length}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Duplicates:</span>
-        <span class="stat-value warning">${filtered.duplicates.length}</span>
+        <span class="stat-label">Total Extracted:</span>
+        <span class="stat-value">${allTransactions.length}</span>
       </div>
       <div class="stat-item">
         <span class="stat-label">Account:</span>
-        <span class="stat-value">${this.selectedSheet.displayName}</span>
+        <span class="stat-value" style="font-size: 1rem">${this.selectedSheet.displayName}</span>
       </div>
     `;
 
         // Clear table
         tbody.innerHTML = '';
 
-        // Add unique transactions
-        filtered.unique.forEach(transaction => {
-            const row = this.createTransactionRow(transaction, false);
-            tbody.appendChild(row);
-        });
-
-        // Add duplicate transactions (grayed out)
-        filtered.duplicates.forEach(({ transaction }) => {
-            const row = this.createTransactionRow(transaction, true);
+        // Add all transactions as normal rows
+        allTransactions.forEach(transaction => {
+            const row = this.createTransactionRow(transaction, false); // isDuplicate = false
             tbody.appendChild(row);
         });
 

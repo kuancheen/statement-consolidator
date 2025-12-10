@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.29] - 2025-12-10
+
+### Changed
+- **Workflow:** Removed client-side deduplication. All extracted transactions are now uploaded to Google Sheets regardless of whether they already exist, pushing the responsibility of duplicate management to the Sheet itself (e.g., via unique constraints or manual cleanup).
+- **UI:** Simplified the preview statistics to remove "New" vs "Duplicate" counts, now showing just the "Total Extracted".
 ## [0.3.28] - 2025-12-09
 
 ### Fixed
