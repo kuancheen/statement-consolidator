@@ -476,14 +476,10 @@ class StatementConsolidatorApp {
         // Processing complete
         if (btn) btn.disabled = false;
 
-        // Remove processing message or show done
+        // Remove processing message or show done (Persistent)
         this.showFieldStatus('processAllBtn', 'success', 'Queue processing complete');
 
-        // Clear message after 3 seconds
-        setTimeout(() => {
-            const formGroup = btn.closest('.form-group') || btn.parentElement;
-            if (formGroup) formGroup.querySelectorAll('.field-status, .field-error').forEach(el => el.remove());
-        }, 3000);
+        // No timeout - stays until user closes
     }
 
     // Remove file from queue
@@ -497,6 +493,15 @@ class StatementConsolidatorApp {
         if (sheetTitle === '_NEW_') {
             const accountName = prompt('Enter new account name (without @):');
             if (accountName) {
+                // Check if already exists (case-insensitive check might be nicer but strict for now)
+                const existing = this.accountSheets.find(s => s.displayName.toLowerCase() === accountName.toLowerCase());
+                if (existing) {
+                    this.showStatus(`Account '${existing.displayName}' already exists. Selected it.`, 'info');
+                    this.fileQueue.setAccount(id, existing);
+                    this.renderFileQueue();
+                    return;
+                }
+
                 try {
                     this.showStatus('Creating account sheet...', 'info');
                     const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
@@ -696,6 +701,12 @@ class StatementConsolidatorApp {
             return;
         }
 
+        const btn = document.getElementById('processAllBtn');
+        if (btn) btn.disabled = true;
+
+        // Use inline status
+        this.showFieldStatus('processAllBtn', 'processing', `Importing ${readyFiles.length} files...`);
+
         let successCount = 0;
 
         for (const fileObj of readyFiles) {
@@ -723,9 +734,10 @@ class StatementConsolidatorApp {
             }
         }
 
-        this.showStatus(`Batch import complete. Imported ${successCount} files.`, 'success');
-        // Re-render only if needed, but we updated inline DOM for speed/feedback
-        // this.renderFileQueue(); 
+        if (btn) btn.disabled = false;
+
+        // Final Status - Persistent (User must close)
+        this.showFieldStatus('processAllBtn', 'success', `Batch import complete. Imported ${successCount} files.`);
     }
 
     // Helper to update just the status element of a file card
