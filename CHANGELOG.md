@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.30] - 2025-12-10
+
+### Changed
+- **Architecture:** Permanently removed client-side deduplication logic (`deduplication.js`) to streamline the app.
+- **Data Schema:** Updated the Google Sheets export schema to include a new 5th column ("Status") for all transactions. Every new upload now defaults to `New` status, paving the way for server-side duplicate management.
 ## [0.3.29] - 2025-12-10
 
 ### Changed

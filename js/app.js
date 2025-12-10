@@ -4,7 +4,6 @@ class StatementConsolidatorApp {
         this.sheetsAPI = new SheetsAPI();
         this.ocrService = new OCRService();
 
-        this.dedupEngine = new DeduplicationEngine();
         this.fileQueue = new FileQueueManager();
 
         this.currentFile = null;

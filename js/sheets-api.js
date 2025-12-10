@@ -182,10 +182,11 @@ class SheetsAPI {
             t.date,
             t.description,
             t.credit || '',
-            t.debit || ''
+            t.debit || '',
+            'New' // Column E: Status (New by default)
         ]);
 
-        const range = `${sheetName}!A:D`;
+        const range = `${sheetName}!A:E`;
         const response = await fetch(
             `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
             {
@@ -237,11 +238,12 @@ class SheetsAPI {
             CONFIG.SHEET_COLUMNS.DATE,
             CONFIG.SHEET_COLUMNS.DESCRIPTION,
             CONFIG.SHEET_COLUMNS.CREDIT,
-            CONFIG.SHEET_COLUMNS.DEBIT
+            CONFIG.SHEET_COLUMNS.DEBIT,
+            'Status'
         ];
 
         await fetch(
-            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:D1?valueInputOption=USER_ENTERED`,
+            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:E1?valueInputOption=USER_ENTERED`,
             {
                 method: 'PUT',
                 headers: {
