@@ -179,14 +179,13 @@ class SheetsAPI {
 
     // Append new transactions to a sheet
     // UPDATED SCHEMA: A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status
+    // STRATEGY: Two-Step Append. Append B:F (Data), then write A (Key) explicitly.
+    // This avoids issues where hidden Column A causes 'append' to shift data to B.
     async appendTransactions(sheetName, transactions, sheetIdForSetup = null) {
         if (!this.sheetId) throw new Error('Not connected to a sheet');
         if (!this.accessToken) throw new Error('Auth required');
 
-        // Check & Setup Sheet First (Auto-healing)
-        // We need the numeric sheetId, not just the name. 
-        // app.js should ideally pass the full sheet object.
-        // If not passed, we might skip or do a lookup.
+        // Check & Setup Sheet First
         try {
             if (sheetIdForSetup) {
                 await this.ensureSheetSetup(sheetIdForSetup, sheetName);
@@ -195,17 +194,20 @@ class SheetsAPI {
             console.warn('Auto-setup failed, continuing append:', e);
         }
 
-        const rows = transactions.map(t => {
-            // Generate Unique Key: Date|Desc|Credit|Debit
+        // Prepare Data
+        const keysToUpdate = [];
+        const rowsToAppend = transactions.map(t => {
+            // Generate Unique Key
             const cleanDate = (t.date || '').trim();
             const cleanDesc = (t.description || '').trim();
             const cleanCredit = (t.credit || '').trim();
             const cleanDebit = (t.debit || '').trim();
-
             const uniqueKey = `${cleanDate}|${cleanDesc}|${cleanCredit}|${cleanDebit}`;
 
+            keysToUpdate.push([uniqueKey]); // For Column A
+
+            // Data for Columns B-F
             return [
-                uniqueKey,  // A: Unique Key (Hidden)
                 t.date,     // B: Date
                 t.description, // C: Desc
                 t.credit || '', // D: Credit
@@ -214,8 +216,9 @@ class SheetsAPI {
             ];
         });
 
-        const range = `${sheetName}!A:F`;
-        const response = await fetch(
+        // Step 1: Append Data to B:F
+        const range = `${sheetName}!B:F`;
+        const appendRes = await fetch(
             `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
             {
                 method: 'POST',
@@ -223,16 +226,46 @@ class SheetsAPI {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${this.accessToken}`
                 },
-                body: JSON.stringify({ values: rows })
+                body: JSON.stringify({ values: rowsToAppend })
             }
         );
 
-        if (!response.ok) {
-            const error = await response.text();
+        if (!appendRes.ok) {
+            const error = await appendRes.text();
             throw new Error(`Failed to append transactions: ${error}`);
         }
 
-        return await response.json();
+        const appendData = await appendRes.json();
+        const updatedRange = appendData.updates.updatedRange; // e.g., "Sheet1!B2:F4"
+
+        // Step 2: Write Keys to Column A
+        // Parse the range to get start row
+        // updatedRange format: SheetName!StartColStartRow:EndColEndRow
+        const match = updatedRange.match(/!([A-Z]+)(\d+):([A-Z]+)(\d+)/);
+        if (match) {
+            const startRow = parseInt(match[2]);
+            const endRow = parseInt(match[4]);
+
+            // Safety check
+            if ((endRow - startRow + 1) === keysToUpdate.length) {
+                const keyRange = `${sheetName}!A${startRow}:A${endRow}`;
+                await fetch(
+                    `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(keyRange)}?valueInputOption=USER_ENTERED`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.accessToken}`
+                        },
+                        body: JSON.stringify({ values: keysToUpdate })
+                    }
+                );
+            } else {
+                console.warn('Row count mismatch in append vs key update', updatedRange, keysToUpdate.length);
+            }
+        }
+
+        return appendData;
     }
 
     // Create a new account sheet
