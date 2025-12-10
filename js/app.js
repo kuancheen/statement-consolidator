@@ -682,22 +682,47 @@ class StatementConsolidatorApp {
 
         for (const fileObj of readyFiles) {
             try {
-                // BYPASS DEDUPLICATION: Upload all transactions directly
-                // const filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
+                // UPDATE UI: Importing...
+                this.updateFileStatusUI(fileObj.id, 'importing', 'Importing...');
 
                 const transactionsToUpload = fileObj.data.transactions;
 
                 if (transactionsToUpload.length > 0) {
                     await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, transactionsToUpload, fileObj.accountSheet.id);
                     successCount++;
+
+                    // UPDATE UI: Imported
+                    this.updateFileStatusUI(fileObj.id, 'imported', 'Imported ✓');
+                    // Optional: Update internal status so it sticks if re-rendered
+                    fileObj.status = 'imported';
+                } else {
+                    this.updateFileStatusUI(fileObj.id, 'done', 'Empty?');
                 }
             } catch (e) {
                 console.error('Import failed for ' + fileObj.name, e);
+                this.updateFileStatusUI(fileObj.id, 'error', 'Failed');
+                this.showFileError(fileObj.id, e.message);
             }
         }
 
         this.showStatus(`Batch import complete. Imported ${successCount} files.`, 'success');
-        // Optional: clear queue
+        // Re-render only if needed, but we updated inline DOM for speed/feedback
+        // this.renderFileQueue(); 
+    }
+
+    // Helper to update just the status element of a file card
+    updateFileStatusUI(id, statusClass, statusText) {
+        const item = document.getElementById(`item-${id}`);
+        if (!item) return;
+
+        const statusEl = item.querySelector('.file-status');
+        if (statusEl) {
+            // Remove old status classes
+            statusEl.classList.remove('status-done', 'status-processing', 'status-error', 'status-pending', 'status-importing', 'status-imported');
+            // Add new
+            statusEl.classList.add(`status-${statusClass}`);
+            statusEl.textContent = statusText;
+        }
     }
 
     // Legacy method helper for single file Preview flow

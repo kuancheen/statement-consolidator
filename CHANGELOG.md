@@ -4,6 +4,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.33] - 2025-12-11
+
+### Changed
+- **Import Status Indicators:** Added real-time visual feedback during batch imports.
+    - Files now show **"Importing..."** (Yellow) while keeping the connection open.
+    - Successfully uploaded files change to **"Imported ✓"** (Green).
+- **Hidden Column Reliability:** Reinforced verification of hidden columns during batch imports to ensure data integrity.
 ## [0.3.32] - 2025-12-10
 
 ### Changed
