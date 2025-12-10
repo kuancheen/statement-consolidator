@@ -136,11 +136,14 @@ class SheetsAPI {
     }
 
     // Read existing transactions from a sheet
+    // UPDATED SCHEMA: A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status
     async readTransactions(sheetName) {
         if (!this.sheetId) throw new Error('Not connected to a sheet');
         if (!this.accessToken) throw new Error('Auth required');
 
-        const range = `${sheetName}!A:D`;
+        // We read B:E effectively for the app's internal logic, 
+        // but let's read everything just in case.
+        const range = `${sheetName}!A:F`;
         const response = await fetch(
             `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}`,
             {
@@ -160,12 +163,13 @@ class SheetsAPI {
         const transactions = [];
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            if (row.length >= 2) {
+            // Row indices: 0=Key, 1=Date, 2=Desc, 3=Credit, 4=Debit, 5=Status
+            if (row.length >= 3) { // Ensure at least Date/Desc exist
                 transactions.push({
-                    date: row[0] || '',
-                    description: row[1] || '',
-                    credit: row[2] || '',
-                    debit: row[3] || ''
+                    date: row[1] || '',
+                    description: row[2] || '',
+                    credit: row[3] || '',
+                    debit: row[4] || ''
                 });
             }
         }
@@ -174,13 +178,25 @@ class SheetsAPI {
     }
 
     // Append new transactions to a sheet
-    async appendTransactions(sheetName, transactions) {
+    // UPDATED SCHEMA: A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status
+    async appendTransactions(sheetName, transactions, sheetIdForSetup = null) {
         if (!this.sheetId) throw new Error('Not connected to a sheet');
         if (!this.accessToken) throw new Error('Auth required');
 
+        // Check & Setup Sheet First (Auto-healing)
+        // We need the numeric sheetId, not just the name. 
+        // app.js should ideally pass the full sheet object.
+        // If not passed, we might skip or do a lookup.
+        try {
+            if (sheetIdForSetup) {
+                await this.ensureSheetSetup(sheetIdForSetup, sheetName);
+            }
+        } catch (e) {
+            console.warn('Auto-setup failed, continuing append:', e);
+        }
+
         const rows = transactions.map(t => {
             // Generate Unique Key: Date|Desc|Credit|Debit
-            // Normalize inputs to ensure consistency
             const cleanDate = (t.date || '').trim();
             const cleanDesc = (t.description || '').trim();
             const cleanCredit = (t.credit || '').trim();
@@ -189,12 +205,12 @@ class SheetsAPI {
             const uniqueKey = `${cleanDate}|${cleanDesc}|${cleanCredit}|${cleanDebit}`;
 
             return [
-                t.date,
-                t.description,
-                t.credit || '',
-                t.debit || '',
-                'New',      // Column E: Status
-                uniqueKey   // Column F: Unique ID (Hidden Helper)
+                uniqueKey,  // A: Unique Key (Hidden)
+                t.date,     // B: Date
+                t.description, // C: Desc
+                t.credit || '', // D: Credit
+                t.debit || '',  // E: Debit
+                'New'       // F: Status
             ];
         });
 
@@ -226,8 +242,8 @@ class SheetsAPI {
 
         const sheetTitle = `${CONFIG.ACCOUNT_SHEET_PREFIX}${accountName}`;
 
-        // Create the sheet
-        const response = await fetch(
+        // 1. Create the sheet
+        const createRes = await fetch(
             `${this.baseUrl}/${this.sheetId}:batchUpdate`,
             {
                 method: 'POST',
@@ -243,30 +259,148 @@ class SheetsAPI {
             }
         );
 
-        if (!response.ok) throw new Error('Failed to create sheet');
+        if (!createRes.ok) throw new Error('Failed to create sheet');
+        const createData = await createRes.json();
+        const newSheetId = createData.replies[0].addSheet.properties.sheetId;
 
-        // Add headers
-        const headers = [
-            CONFIG.SHEET_COLUMNS.DATE,
-            CONFIG.SHEET_COLUMNS.DESCRIPTION,
-            CONFIG.SHEET_COLUMNS.CREDIT,
-            CONFIG.SHEET_COLUMNS.DEBIT,
-            'Status',
-            'Unique Key'
-        ];
-
-        await fetch(
-            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1?valueInputOption=USER_ENTERED`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.accessToken}`
-                },
-                body: JSON.stringify({ values: [headers] })
-            }
-        );
+        // 2. Run Setup (Headers + Formatting + Validation + Hide Column)
+        await this.ensureSheetSetup(newSheetId, sheetTitle);
 
         return sheetTitle;
+    }
+
+    // Ensure Sheet Setup (Headers, Formatting, Validation)
+    async ensureSheetSetup(sheetId, sheetTitle) {
+        // Step 1: Check if headers exist (Optimization: Read A1)
+        // Actually, let's just write headers if missing. simpler to just always check or skip.
+        // For efficiency, we assume if we are creating, we write.
+        // But for appending, we might check. Let's do a quick read of A1:F1.
+
+        const checkParams = {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${this.accessToken}` }
+        };
+
+        let headersMissing = false;
+        try {
+            // We check F1 (Status) to see if it Matches our schema
+            const headerRes = await fetch(
+                `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1`,
+                checkParams
+            );
+            const headerData = await headerRes.json();
+
+            // If empty or A1 is not 'Unique Key' (Checking new schema)
+            if (!headerData.values || !headerData.values[0] || headerData.values[0][0] !== 'Unique Key') {
+                headersMissing = true;
+            }
+        } catch (e) {
+            headersMissing = true;
+        }
+
+        const requests = [];
+
+        // 1. Add Headers if missing
+        if (headersMissing) {
+            // Write Headers via value update (not batchUpdate)
+            const headers = [
+                'Unique Key', // A
+                CONFIG.SHEET_COLUMNS.DATE, // B
+                CONFIG.SHEET_COLUMNS.DESCRIPTION, // C
+                CONFIG.SHEET_COLUMNS.CREDIT, // D
+                CONFIG.SHEET_COLUMNS.DEBIT, // E
+                'Status' // F
+            ];
+
+            await fetch(
+                `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1?valueInputOption=USER_ENTERED`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.accessToken}`
+                    },
+                    body: JSON.stringify({ values: [headers] })
+                }
+            );
+
+            // Bold Headers
+            requests.push({
+                repeatCell: {
+                    range: { sheetId: sheetId, startRowIndex: 0, endRowIndex: 1 },
+                    cell: { userEnteredFormat: { textFormat: { bold: true } } },
+                    fields: "userEnteredFormat.textFormat.bold"
+                }
+            });
+        }
+
+        // 2. Hide Column A (Unique Key)
+        requests.push({
+            updateDimensionProperties: {
+                range: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 1 },
+                properties: { hiddenByUser: true },
+                fields: 'hiddenByUser'
+            }
+        });
+
+        // 3. Data Validation for Column F (Status) - Dropdown
+        requests.push({
+            setDataValidation: {
+                range: { sheetId: sheetId, startRowIndex: 1, startColumnIndex: 5, endColumnIndex: 6 }, // F2:F
+                rule: {
+                    condition: {
+                        type: 'ONE_OF_LIST',
+                        values: [
+                            { userEnteredValue: 'New' },
+                            { userEnteredValue: 'Duplicate' },
+                            { userEnteredValue: 'To be deleted' }
+                        ]
+                    },
+                    showCustomUi: true,
+                    strict: true
+                }
+            }
+        });
+
+        // 4. Conditional Formatting for Duplicates (Check Column A)
+        // Rule: =COUNTIF($A:$A, $A1)>1  applied to A:F
+        // Note: Apps Script/API rules can be tricky. We want to clear old ones to avoid dupes?
+        // BatchUpdate appends rules by default.
+        // We will add a rule that highlights the whole row if A is duplicate.
+        // Formula: =COUNTIF($A:$A, $A1)>1
+
+        requests.push({
+            addConditionalFormatRule: {
+                rule: {
+                    ranges: [{ sheetId: sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 6 }], // A2:F
+                    booleanRule: {
+                        condition: {
+                            type: 'CUSTOM_FORMULA',
+                            values: [{ userEnteredValue: '=COUNTIF($A:$A, $A1)>1' }]
+                        },
+                        format: {
+                            backgroundColor: { red: 0.98, green: 0.91, blue: 0.9 }, // #FCE8E6 (Light Red)
+                            textFormat: { foregroundColor: { red: 0.77, green: 0.13, blue: 0.12 } } // #C5221F (Dark Red)
+                        }
+                    }
+                },
+                index: 0
+            }
+        });
+
+        // Execute Batch Update
+        if (requests.length > 0) {
+            await fetch(
+                `${this.baseUrl}/${this.sheetId}:batchUpdate`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.accessToken}`
+                    },
+                    body: JSON.stringify({ requests })
+                }
+            );
+        }
     }
 }

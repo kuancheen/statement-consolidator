@@ -688,7 +688,7 @@ class StatementConsolidatorApp {
                 const transactionsToUpload = fileObj.data.transactions;
 
                 if (transactionsToUpload.length > 0) {
-                    await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, transactionsToUpload);
+                    await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, transactionsToUpload, fileObj.accountSheet.id);
                     successCount++;
                 }
             } catch (e) {

@@ -4,6 +4,14 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.32] - 2025-12-10
+
+### Changed
+- **Sheet Automation:** The app now programmatically configures your Google Sheet columns and rules.
+    - **Hidden Unique Key:** The Unique Key has been moved to **Column A** and acts as a hidden unique identifier.
+    - **Auto-Formatting:** The app automatically applies **Conditional Formatting** to highlight duplicates in red.
+    - **Dropdowns:** The "Status" column (F) now automatically gets a dropdown menu (New, Duplicate, To be deleted).
+- **Self-Healing:** Every time you upload, the app checks if these rules exist on the target sheet and adds them if missing, ensuring new sheets are always set up correctly.
 ## [0.3.31] - 2025-12-10
 
 ### Added
