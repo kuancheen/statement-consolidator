@@ -8,8 +8,11 @@ class StatementConsolidatorApp {
 
         this.currentFile = null;
         this.extractedData = null;
+        this.extractedData = null;
         this.selectedSheet = null;
         this.accountSheets = [];
+
+        this.isProcessing = false; // Flag to lock UI during heavy ops
 
         this.init();
     }
@@ -416,6 +419,15 @@ class StatementConsolidatorApp {
         // Update Process Button state
         const pendingCount = this.fileQueue.getPendingFiles().length;
         const btn = document.getElementById('processAllBtn');
+
+        // Strict Lock: If processing, disable regardless of state
+        if (this.isProcessing) {
+            btn.disabled = true;
+            // Keep text same or add spinner, but disabled state is key
+        } else {
+            btn.disabled = false;
+        }
+
         if (pendingCount === 0 && files.length > 0) {
             btn.textContent = 'Import All Verified';
             btn.classList.add('btn-success');
@@ -424,7 +436,7 @@ class StatementConsolidatorApp {
             btn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.importAllFiles();
+                if (!this.isProcessing) this.importAllFiles();
             };
         } else {
             btn.textContent = `Process Queue (${pendingCount})`;
@@ -433,18 +445,20 @@ class StatementConsolidatorApp {
             btn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.processQueue();
+                if (!this.isProcessing) this.processQueue();
             };
         }
     }
 
     // Process file queue
     async processQueue() {
+        if (this.isProcessing) return; // Guard
+
         const pending = this.fileQueue.getPendingFiles();
         if (pending.length === 0) return;
 
-        const btn = document.getElementById('processAllBtn');
-        if (btn) btn.disabled = true;
+        this.isProcessing = true;
+        this.renderFileQueue(); // Triggers disable
 
         // Use inline status instead of global
         this.showFieldStatus('processAllBtn', 'processing', `Processing ${pending.length} files...`);
@@ -474,7 +488,8 @@ class StatementConsolidatorApp {
         }
 
         // Processing complete
-        if (btn) btn.disabled = false;
+        this.isProcessing = false;
+        this.renderFileQueue(); // Re-enable
 
         // Remove processing message or show done (Persistent)
         this.showFieldStatus('processAllBtn', 'success', 'Queue processing complete');
@@ -695,14 +710,16 @@ class StatementConsolidatorApp {
 
     // Import All Files
     async importAllFiles() {
+        if (this.isProcessing) return;
+
         const readyFiles = this.fileQueue.getFiles().filter(f => f.status === 'done' && f.accountSheet);
         if (readyFiles.length === 0) {
             this.showStatus('No ready files to import', 'warning');
             return;
         }
 
-        const btn = document.getElementById('processAllBtn');
-        if (btn) btn.disabled = true;
+        this.isProcessing = true;
+        this.renderFileQueue(); // Lock UI
 
         // Use inline status
         this.showFieldStatus('processAllBtn', 'processing', `Importing ${readyFiles.length} files...`);
@@ -734,7 +751,8 @@ class StatementConsolidatorApp {
             }
         }
 
-        if (btn) btn.disabled = false;
+        this.isProcessing = false;
+        this.renderFileQueue(); // Unlock UI
 
         // Final Status - Persistent (User must close)
         this.showFieldStatus('processAllBtn', 'success', `Batch import complete. Imported ${successCount} files.`);

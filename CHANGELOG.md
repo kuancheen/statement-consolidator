@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.38] - 2025-12-11
+
+### Changed
+- **Visual Polish:** Updated inline error/status messages to match the main application's consistent styling (Green/Red/Orange boxes with full borders).
+- **Robust Button Locking:** Implemented a global processing state that strictly locks the "Process Queue" and "Import All" buttons during operations, preventing any possibility of accidental double-clicking even if the UI updates.
 ## [0.3.37] - 2025-12-11
 
 ### Changed

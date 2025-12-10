@@ -658,13 +658,16 @@ select.error {
 }
 
 /* Field error and status messages */
+/* Field error and status messages */
 .field-error {
   color: var(--error);
   font-size: 0.875rem;
   margin-top: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-sm);
+  /* Increased padding */
   background: rgba(239, 68, 68, 0.1);
-  border-left: 3px solid var(--error);
+  border: 1px solid var(--error);
+  /* Full border */
   border-radius: var(--radius-sm);
   animation: slideIn var(--transition-base);
 }
@@ -672,21 +675,30 @@ select.error {
 .field-status {
   font-size: 0.875rem;
   margin-top: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-sm);
+  /* Increased padding */
   border-radius: var(--radius-sm);
   animation: slideIn var(--transition-base);
+  font-weight: 500;
 }
 
 .field-status.success {
   color: var(--success);
   background: rgba(16, 185, 129, 0.1);
-  border-left: 3px solid var(--success);
+  border: 1px solid var(--success);
+  /* Full border matching status-message */
 }
 
 .field-status.info {
   color: var(--info);
   background: rgba(59, 130, 246, 0.1);
-  border-left: 3px solid var(--info);
+  border: 1px solid var(--info);
+}
+
+.field-status.processing {
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--warning);
 }
 
 /* Close button for field messages */
