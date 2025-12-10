@@ -533,17 +533,11 @@ class StatementConsolidatorApp {
         // Render Loading
         previewContainer.innerHTML = '<div class="processing-indicator" style="margin:0"><div class="spinner"></div><span>Preparing preview...</span></div>';
 
-        // Deduplication Logic (only if sheet selected)
-        let filtered = { unique: fileObj.data.transactions, duplicates: [] };
+        // Deduplication Logic Removed (User requested "Upload All" strategy)
+        // We now just show all transactions as "New" locally.
+        const filtered = { unique: fileObj.data.transactions, duplicates: [] };
 
-        if (this.selectedSheet) {
-            // Sync main selector
-            const mainSelect = document.getElementById('accountSheetSelect');
-            if (mainSelect) mainSelect.value = this.selectedSheet.title;
-
-            await this.loadExistingTransactions();
-            filtered = this.dedupEngine.filterDuplicates(fileObj.data.transactions);
-        }
+        // if (this.selectedSheet) { ... } // Logic removed
 
         // Generate Rows
         const rows = filtered.unique.map(t => this.createTransactionRowHTML(t, false))

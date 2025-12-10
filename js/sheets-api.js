@@ -178,15 +178,27 @@ class SheetsAPI {
         if (!this.sheetId) throw new Error('Not connected to a sheet');
         if (!this.accessToken) throw new Error('Auth required');
 
-        const rows = transactions.map(t => [
-            t.date,
-            t.description,
-            t.credit || '',
-            t.debit || '',
-            'New' // Column E: Status (New by default)
-        ]);
+        const rows = transactions.map(t => {
+            // Generate Unique Key: Date|Desc|Credit|Debit
+            // Normalize inputs to ensure consistency
+            const cleanDate = (t.date || '').trim();
+            const cleanDesc = (t.description || '').trim();
+            const cleanCredit = (t.credit || '').trim();
+            const cleanDebit = (t.debit || '').trim();
 
-        const range = `${sheetName}!A:E`;
+            const uniqueKey = `${cleanDate}|${cleanDesc}|${cleanCredit}|${cleanDebit}`;
+
+            return [
+                t.date,
+                t.description,
+                t.credit || '',
+                t.debit || '',
+                'New',      // Column E: Status
+                uniqueKey   // Column F: Unique ID (Hidden Helper)
+            ];
+        });
+
+        const range = `${sheetName}!A:F`;
         const response = await fetch(
             `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
             {
@@ -239,11 +251,12 @@ class SheetsAPI {
             CONFIG.SHEET_COLUMNS.DESCRIPTION,
             CONFIG.SHEET_COLUMNS.CREDIT,
             CONFIG.SHEET_COLUMNS.DEBIT,
-            'Status'
+            'Status',
+            'Unique Key'
         ];
 
         await fetch(
-            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:E1?valueInputOption=USER_ENTERED`,
+            `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1?valueInputOption=USER_ENTERED`,
             {
                 method: 'PUT',
                 headers: {

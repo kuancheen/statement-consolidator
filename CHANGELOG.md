@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.31] - 2025-12-10
+
+### Added
+- **Unique Key Column:** Added a 6th column ("Unique Key") to the Google Sheets export. This column contains a generated composite key (`Date|Desc|Amount`) for each transaction, enabling high-performance deduplication using native Sheet formulas (e.g., Conditional Formatting) without relying on slow Apps Script iteration.
+- **Preview Logic Fix:** Removed legacy references to the deduplication engine in the preview module which prevented file previews.
 ## [0.3.30] - 2025-12-10
 
 ### Changed
