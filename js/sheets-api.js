@@ -271,38 +271,38 @@ class SheetsAPI {
 
     // Ensure Sheet Setup (Headers, Formatting, Validation)
     async ensureSheetSetup(sheetId, sheetTitle) {
-        // Step 1: Check if headers exist (Optimization: Read A1)
-        // Actually, let's just write headers if missing. simpler to just always check or skip.
-        // For efficiency, we assume if we are creating, we write.
-        // But for appending, we might check. Let's do a quick read of A1:F1.
+        // Step 1: Fetch Sheet Metadata (Headers + Conditional Formatting)
+        let sheetMeta;
+        let headersValues = [];
 
-        const checkParams = {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        };
-
-        let headersMissing = false;
         try {
-            // We check F1 (Status) to see if it Matches our schema
-            const headerRes = await fetch(
-                `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1`,
-                checkParams
+            // 1. Get Conditional Formats & Properties
+            const metaRes = await fetch(
+                `${this.baseUrl}/${this.sheetId}?fields=sheets(properties,conditionalFormats)`,
+                { headers: { 'Authorization': `Bearer ${this.accessToken}` } }
             );
-            const headerData = await headerRes.json();
+            const metaData = await metaRes.json();
+            const sheetObj = metaData.sheets.find(s => s.properties.sheetId === sheetId);
+            sheetMeta = sheetObj || {};
 
-            // If empty or A1 is not 'Unique Key' (Checking new schema)
-            if (!headerData.values || !headerData.values[0] || headerData.values[0][0] !== 'Unique Key') {
-                headersMissing = true;
-            }
+            // 2. Get Headers (A1:F1)
+            const valRes = await fetch(
+                `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1`,
+                { headers: { 'Authorization': `Bearer ${this.accessToken}` } }
+            );
+            const valData = await valRes.json();
+            headersValues = (valData.values && valData.values[0]) ? valData.values[0] : [];
+
         } catch (e) {
-            headersMissing = true;
+            console.warn('Setup fetch failed', e);
+            return; // Can't proceed safely
         }
 
         const requests = [];
 
-        // 1. Add Headers if missing
-        if (headersMissing) {
-            // Write Headers via value update (not batchUpdate)
+        // 1. Add Headers if missing or incorrect schema
+        // Check if A1 is 'Unique Key'
+        if (headersValues[0] !== 'Unique Key') {
             const headers = [
                 'Unique Key', // A
                 CONFIG.SHEET_COLUMNS.DATE, // B
@@ -334,7 +334,9 @@ class SheetsAPI {
             });
         }
 
-        // 2. Hide Column A (Unique Key)
+        // 2. Hide Column A (Unique Key) - Always ensure it's hidden
+        // We can't easily check if it's already hidden without more queries, 
+        // but 'updateDimensionProperties' is cheap and idempotent enough UI-wise.
         requests.push({
             updateDimensionProperties: {
                 range: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 1 },
@@ -343,7 +345,8 @@ class SheetsAPI {
             }
         });
 
-        // 3. Data Validation for Column F (Status) - Dropdown
+        // 3. Data Validation for Column F (Status)
+        // Set it unconditionally to ensure it's always up to date
         requests.push({
             setDataValidation: {
                 range: { sheetId: sheetId, startRowIndex: 1, startColumnIndex: 5, endColumnIndex: 6 }, // F2:F
@@ -362,31 +365,38 @@ class SheetsAPI {
             }
         });
 
-        // 4. Conditional Formatting for Duplicates (Check Column A)
-        // Rule: =COUNTIF($A:$A, $A1)>1  applied to A:F
-        // Note: Apps Script/API rules can be tricky. We want to clear old ones to avoid dupes?
-        // BatchUpdate appends rules by default.
-        // We will add a rule that highlights the whole row if A is duplicate.
-        // Formula: =COUNTIF($A:$A, $A1)>1
+        // 4. Conditional Formatting (Idempotent Check)
+        // Check if our specific rule exists
+        const existingRules = sheetMeta.conditionalFormats || [];
+        const duplicateRuleFormula = '=COUNTIF($A:$A, $A1)>1';
 
-        requests.push({
-            addConditionalFormatRule: {
-                rule: {
-                    ranges: [{ sheetId: sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 6 }], // A2:F
-                    booleanRule: {
-                        condition: {
-                            type: 'CUSTOM_FORMULA',
-                            values: [{ userEnteredValue: '=COUNTIF($A:$A, $A1)>1' }]
-                        },
-                        format: {
-                            backgroundColor: { red: 0.98, green: 0.91, blue: 0.9 }, // #FCE8E6 (Light Red)
-                            textFormat: { foregroundColor: { red: 0.77, green: 0.13, blue: 0.12 } } // #C5221F (Dark Red)
+        const hasDuplicateRule = existingRules.some(rule =>
+            rule.booleanRule &&
+            rule.booleanRule.condition.type === 'CUSTOM_FORMULA' &&
+            rule.booleanRule.condition.values &&
+            rule.booleanRule.condition.values[0].userEnteredValue === duplicateRuleFormula
+        );
+
+        if (!hasDuplicateRule) {
+            requests.push({
+                addConditionalFormatRule: {
+                    rule: {
+                        ranges: [{ sheetId: sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 6 }], // A2:F
+                        booleanRule: {
+                            condition: {
+                                type: 'CUSTOM_FORMULA',
+                                values: [{ userEnteredValue: duplicateRuleFormula }]
+                            },
+                            format: {
+                                backgroundColor: { red: 0.98, green: 0.91, blue: 0.9 }, // #FCE8E6 (Light Red)
+                                textFormat: { foregroundColor: { red: 0.77, green: 0.13, blue: 0.12 } } // #C5221F (Dark Red)
+                            }
                         }
-                    }
-                },
-                index: 0
-            }
-        });
+                    },
+                    index: 0 // Insert at top priority
+                }
+            });
+        }
 
         // Execute Batch Update
         if (requests.length > 0) {
