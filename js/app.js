@@ -64,7 +64,7 @@ class StatementConsolidatorApp {
                     try {
                         this.sheetsAPI.initTokenClient(clientId);
                     } catch (e) {
-                        this.showStatus('Initialization failed: ' + e.message, 'error');
+                        this.showFieldStatus('step1Status', 'Initialization failed: ' + e.message, 'error');
                         return;
                     }
                 }
@@ -74,7 +74,7 @@ class StatementConsolidatorApp {
                 try {
                     this.sheetsAPI.requestAccessToken();
                 } catch (e) {
-                    this.showStatus(e.message, 'error');
+                    this.showFieldStatus('step1Status', e.message, 'error');
                 }
             } else {
                 this.connectToSheet();
@@ -83,7 +83,7 @@ class StatementConsolidatorApp {
 
         // Listen for auth success
         document.addEventListener('auth-success', () => {
-            this.showStatus('Signed in with Google!', 'success');
+            this.showFieldStatus('step2Status', 'Signed in with Google!', 'success');
             // If we were trying to connect, retry?
             const sheetUrl = document.getElementById('sheetUrlInput').value.trim();
             if (sheetUrl) this.connectToSheet();
@@ -150,7 +150,7 @@ class StatementConsolidatorApp {
             document.getElementById('apiKeyInput').value = savedKey;
             this.sheetsAPI.setApiKey(savedKey); // Ensure it's set here too
             // Show success in specific area
-            this.showFieldStatus('saveCredentialsBtn', 'Credentials saved & initialized!', 'success');
+            this.showFieldStatus('step1Status', 'Credentials saved & initialized!', 'success');
 
             // Hide global status if it was shown
             document.getElementById('statusMessage').classList.add('hidden');
@@ -167,7 +167,7 @@ class StatementConsolidatorApp {
             // Show inline status via standard helper (adds dismiss button)
             if (savedKey) {
                 // Target the button so the status appears below it
-                this.showFieldStatus('saveCredentialsBtn', 'Credentials loaded from storage ✓', 'success');
+                this.showFieldStatus('step1Status', 'Credentials loaded from storage ✓', 'success');
             }
 
             try {
@@ -186,7 +186,7 @@ class StatementConsolidatorApp {
     // Save API key
     saveApiKey(key, showMessage = true) {
         if (!key || key.trim() === '') {
-            this.showFieldError('apiKeyInput', 'Please enter an API key');
+            this.showFieldStatus('apiKeyInput', 'Please enter an API key', 'error');
             return;
         }
 
@@ -204,11 +204,11 @@ class StatementConsolidatorApp {
         const clientId = document.getElementById('clientIdInput').value.trim();
 
         if (!apiKey) {
-            this.showFieldError('apiKeyInput', 'Please enter API Key');
+            this.showFieldStatus('apiKeyInput', 'Please enter API Key', 'error');
             return;
         }
         if (!clientId) {
-            this.showFieldError('clientIdInput', 'Please enter Client ID');
+            this.showFieldStatus('clientIdInput', 'Please enter Client ID', 'error');
             return;
         }
 
@@ -221,12 +221,12 @@ class StatementConsolidatorApp {
         // Init Token Client
         try {
             this.sheetsAPI.initTokenClient(clientId);
-            this.showFieldStatus('saveCredentialsBtn', 'Credentials saved & initialized!', 'success');
+            this.showFieldStatus('step1Status', 'Credentials saved & initialized!', 'success');
 
             // Auto-trigger auth if needed? No, let user choose when to sign in.
 
         } catch (e) {
-            this.showStatus('Error initializing OAuth: ' + e.message, 'error');
+            this.showFieldStatus('step1Status', 'Error initializing OAuth: ' + e.message, 'error');
         }
     }
 
@@ -273,7 +273,7 @@ class StatementConsolidatorApp {
         const sheetUrl = document.getElementById('sheetUrlInput').value.trim();
 
         if (!sheetUrl) {
-            this.showFieldError('sheetUrlInput', 'Please enter a Google Sheet URL');
+            this.showFieldStatus('sheetUrlInput', 'Please enter a Google Sheet URL', 'error');
             return;
         }
 
@@ -287,7 +287,7 @@ class StatementConsolidatorApp {
                 this.showFieldStatus('sheetUrlInput', 'No account sheets found. Ensure sheets start with @ (e.g., @DBS).', 'error');
                 document.getElementById('accountSheetsList').classList.add('hidden');
             } else {
-                this.showFieldStatus('sheetUrlInput', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
+                this.showFieldStatus('step2Status', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
                 document.getElementById('uploadSection').classList.remove('hidden');
                 this.displayAccountSheetsList();
             }
@@ -295,7 +295,7 @@ class StatementConsolidatorApp {
             this.updateAccountSheetsList();
 
         } catch (error) {
-            this.showFieldError('sheetUrlInput', error.message);
+            this.showFieldStatus('sheetUrlInput', error.message, 'error');
         }
     }
 
@@ -336,7 +336,7 @@ class StatementConsolidatorApp {
         const fileList = Array.isArray(files) ? files : [files];
 
         if (!this.ocrService.getApiKey()) {
-            this.showFieldError('dropZone', 'Please enter your Gemini API key first');
+            this.showFieldStatus('dropZone', 'Please enter your Gemini API key first', 'error');
             return;
         }
 
@@ -346,7 +346,7 @@ class StatementConsolidatorApp {
         if (newFiles.length > 0) {
             document.getElementById('organizerSection').classList.remove('hidden');
             this.renderFileQueue();
-            this.showStatus(`Added ${newFiles.length} file(s) to queue`, 'success');
+            this.showFieldStatus('queueStats', `Added ${newFiles.length} file(s) to queue`, 'success');
         }
     }
 
@@ -516,14 +516,14 @@ class StatementConsolidatorApp {
                 // Check if already exists (case-insensitive check might be nicer but strict for now)
                 const existing = this.accountSheets.find(s => s.displayName.toLowerCase() === accountName.toLowerCase());
                 if (existing) {
-                    this.showStatus(`Account '${existing.displayName}' already exists. Selected it.`, 'info');
+                    this.showFieldStatus('accountSelector', `Account '${existing.displayName}' already exists. Selected it.`, 'info');
                     this.fileQueue.setAccount(id, existing);
                     this.renderFileQueue();
                     return;
                 }
 
                 try {
-                    this.showStatus('Creating account sheet...', 'info');
+                    this.showFieldStatus('accountSelector', 'Creating account sheet...', 'info');
                     const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
 
                     // Refresh global list
@@ -534,9 +534,9 @@ class StatementConsolidatorApp {
                     const newSheet = this.accountSheets.find(s => s.title === newTitle);
                     this.fileQueue.setAccount(id, newSheet);
 
-                    this.showStatus(`Created ${accountName}!`, 'success');
+                    this.showFieldStatus('accountSelector', `Created ${accountName}!`, 'success');
                 } catch (e) {
-                    this.showStatus(`Error creating sheet: ${e.message}`, 'error');
+                    this.showFieldStatus('accountSelector', `Error creating sheet: ${e.message}`, 'error');
                 }
             }
             // Always re-render to reflect new list and selection
@@ -645,26 +645,39 @@ class StatementConsolidatorApp {
         `;
     }
 
-    // Updated Helper: Show field status
-    showFieldStatus(elementId, type, message) {
-        const input = document.getElementById(elementId);
-        if (!input) return;
+    // Unified helper: Show field status or error
+    showFieldStatus(elementId, message, type = 'success') {
+        const target = document.getElementById(elementId);
+        if (!target) return;
 
-        // Find the main container (form-group) and the immediate wrapper
-        const formGroup = input.closest('.form-group');
-        const wrapper = input.closest('.input-wrapper');
+        // If target is a container (like step1Status), clear and append directly
+        if (target.tagName === 'DIV' && (elementId.includes('Status') || elementId.includes('container'))) {
+            target.innerHTML = ''; // Clear previous
+            const div = document.createElement('div');
+            div.className = type === 'error' ? 'field-error' : `field-status ${type}`;
+            div.style.marginTop = '0.5rem';
+            div.style.marginBottom = '1rem';
+            div.innerHTML = `
+                <span>${message}</span>
+                <button class="field-message-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            target.appendChild(div);
+            return;
+        }
 
-        // 1. Aggressive Cleanup: Remove ALL existing messages in this group
-        // This prevents stacking multiple messages (like Error + Success)
+        // Standard Input Logic
+        const formGroup = target.closest('.form-group');
+        const wrapper = target.closest('.input-wrapper');
+
+        // Cleanup existing in group
         if (formGroup) {
             formGroup.querySelectorAll('.field-status, .field-error').forEach(el => el.remove());
         } else {
-            // Fallback cleanup if form-group path fails
-            const parent = input.parentElement;
+            const parent = target.parentElement;
             parent.querySelectorAll('.field-status, .field-error').forEach(el => el.remove());
         }
 
-        // 2. Create the new message element
+        // Create message
         const div = document.createElement('div');
         div.className = type === 'error' ? 'field-error' : `field-status ${type}`;
         div.innerHTML = `
@@ -672,18 +685,23 @@ class StatementConsolidatorApp {
             <button class="field-message-close" onclick="this.parentElement.remove()">×</button>
         `;
 
-        // Update input state
-        if (type === 'error') input.classList.add('error');
-        else input.classList.remove('error');
+        // Update input state if it's an input
+        if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+            if (type === 'error') target.classList.add('error');
+            else target.classList.remove('error');
+        }
 
-        // 3. Placement Strategy:
-        // Always try to place it OUTSIDE and AFTER the input wrapper.
-        // This guarantees it sits below the [Input + Button] row.
+        // Placement
         if (wrapper) {
             wrapper.after(div);
         } else {
-            // Fallback: just append to parent if no wrapper exists
-            input.parentElement.appendChild(div);
+            target.parentElement.appendChild(div);
+            // If button, it might be inside a flex container or group, check if we need to put it after the button
+            if (target.tagName === 'BUTTON') {
+                // For buttons, typically we want it below, so append to parent is usually correct if parent is block
+                // But if parent is flex row (button group), we might want it outside?
+                // For now, append to parent works for most current layouts
+            }
         }
     }
     // Show error inline in file item
@@ -851,7 +869,7 @@ class StatementConsolidatorApp {
         if (!accountName) return;
 
         try {
-            this.showStatus('Creating new account sheet...', 'info');
+            this.showFieldStatus('accountSelector', 'Creating new account sheet...', 'info');
 
             const sheetTitle = await this.sheetsAPI.createAccountSheet(accountName);
 
@@ -862,10 +880,10 @@ class StatementConsolidatorApp {
             // Select the new sheet
             document.getElementById('accountSheetSelect').value = sheetTitle;
 
-            this.showStatus(`Created account sheet: ${accountName}`, 'success');
+            this.showFieldStatus('accountSelector', `Created account sheet: ${accountName}`, 'success');
 
         } catch (error) {
-            this.showStatus(`Error creating sheet: ${error.message}`, 'error');
+            this.showFieldStatus('accountSelector', `Error creating sheet: ${error.message}`, 'error');
         }
     }
 
@@ -875,15 +893,15 @@ class StatementConsolidatorApp {
         return;
         /*
         try {
-            this.showStatus('Loading existing transactions...', 'info');
+            this.showFieldStatus('previewStats', 'Loading existing transactions...', 'info');
 
             const existing = await this.sheetsAPI.readTransactions(this.selectedSheet.title);
             this.dedupEngine.setExistingTransactions(existing);
 
-            this.showStatus(`Loaded ${existing.length} existing transaction(s)`, 'success');
+            this.showFieldStatus('previewStats', `Loaded ${existing.length} existing transaction(s)`, 'success');
 
         } catch (error) {
-            this.showStatus(`Warning: Could not load existing transactions: ${error.message}`, 'warning');
+            this.showFieldStatus('previewStats', `Warning: Could not load existing transactions: ${error.message}`, 'warning');
         }
         */
     }
@@ -945,15 +963,15 @@ class StatementConsolidatorApp {
             const filtered = this.dedupEngine.filterDuplicates(this.extractedData.transactions);
 
             if (filtered.unique.length === 0) {
-                this.showStatus('No new transactions to import', 'warning');
+                this.showFieldStatus('importBtn', 'No new transactions to import', 'warning');
                 return;
             }
 
-            this.showStatus(`Importing ${filtered.unique.length} transaction(s)...`, 'info');
+            this.showFieldStatus('importBtn', `Importing ${filtered.unique.length} transaction(s)...`, 'info');
 
             try {
                 await this.sheetsAPI.appendTransactions(this.selectedSheet.title, filtered.unique);
-                this.showStatus(`Successfully imported ${filtered.unique.length} transaction(s)!`, 'success');
+                this.showFieldStatus('importBtn', `Successfully imported ${filtered.unique.length} transaction(s)!`, 'success');
 
                 // Reset for next upload
                 setTimeout(() => {
@@ -962,7 +980,7 @@ class StatementConsolidatorApp {
             } catch (error) {
                 // If write fails due to OAuth requirement, offer CSV download
                 if (error.message.includes('OAuth') || error.message.includes('UNAUTHENTICATED') || error.message.includes('API keys are not supported')) {
-                    this.showStatus('Direct import requires OAuth. Downloading as CSV instead...', 'warning');
+                    this.showFieldStatus('importBtn', 'Direct import requires OAuth. Downloading as CSV instead...', 'warning');
                     this.downloadAsCSV(filtered.unique);
                 } else {
                     throw error;
@@ -970,7 +988,7 @@ class StatementConsolidatorApp {
             }
 
         } catch (error) {
-            this.showStatus(`Import failed: ${error.message}`, 'error');
+            this.showFieldStatus('importBtn', `Import failed: ${error.message}`, 'error');
             console.error(error);
         }
     }
@@ -1007,7 +1025,7 @@ class StatementConsolidatorApp {
         link.click();
         document.body.removeChild(link);
 
-        this.showStatus(`Downloaded ${transactions.length} transactions as ${filename}. You can now import this CSV to your Google Sheet.`, 'success');
+        this.showFieldStatus('importBtn', `Downloaded ${transactions.length} transactions as ${filename}. You can now import this CSV to your Google Sheet.`, 'success');
 
         // Show instructions
         setTimeout(() => {
@@ -1037,26 +1055,13 @@ class StatementConsolidatorApp {
 
         if (this.fileQueue.getFiles().length === 0) {
             document.getElementById('organizerSection').classList.add('hidden');
-            this.showStatus('Ready for next upload', 'info');
+            this.showFieldStatus('dropZone', 'Ready for next upload', 'info');
         } else {
-            this.showStatus('Ready for next file', 'info');
+            this.showFieldStatus('dropZone', 'Ready for next file', 'info');
         }
     }
 
-    // Show status message
-    showStatus(message, type = 'info') {
-        const statusEl = document.getElementById('statusMessage');
-        statusEl.textContent = message;
-        statusEl.className = `status-message ${type}`;
-        statusEl.classList.remove('hidden');
 
-        // Auto-hide after 5 seconds for success messages
-        if (type === 'success') {
-            setTimeout(() => {
-                statusEl.classList.add('hidden');
-            }, 5000);
-        }
-    }
 
     // Format file size
     formatFileSize(bytes) {
@@ -1065,77 +1070,8 @@ class StatementConsolidatorApp {
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
-    // Show field-specific error
-    showFieldError(fieldId, message) {
-        const field = document.getElementById(fieldId);
-        const errorId = `${fieldId}Error`;
 
-        // Remove existing error
-        const existingError = document.getElementById(errorId);
-        if (existingError) {
-            existingError.remove();
-        }
 
-        // Create error message
-        const errorDiv = document.createElement('div');
-        errorDiv.id = errorId;
-        errorDiv.className = 'field-error';
-
-        // Create message text
-        const messageSpan = document.createElement('span');
-        messageSpan.textContent = message;
-        errorDiv.appendChild(messageSpan);
-
-        // Create close button
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'field-message-close';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = () => {
-            errorDiv.remove();
-            field.classList.remove('error');
-        };
-        errorDiv.appendChild(closeBtn);
-
-        // Insert after field
-        field.parentNode.insertBefore(errorDiv, field.nextSibling);
-
-        // Add error styling to field
-        field.classList.add('error');
-    }
-
-    // Show field-specific success message
-    showFieldStatus(fieldId, message, type = 'success') {
-        const field = document.getElementById(fieldId);
-        const statusId = `${fieldId}Status`;
-
-        // Remove existing status
-        const existingStatus = document.getElementById(statusId);
-        if (existingStatus) {
-            existingStatus.remove();
-        }
-
-        // Create status message
-        const statusDiv = document.createElement('div');
-        statusDiv.id = statusId;
-        statusDiv.className = `field-status ${type}`;
-
-        // Create message text
-        const messageSpan = document.createElement('span');
-        messageSpan.textContent = message;
-        statusDiv.appendChild(messageSpan);
-
-        // Create close button
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'field-message-close';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = () => {
-            statusDiv.remove();
-        };
-        statusDiv.appendChild(closeBtn);
-
-        // Insert after field
-        field.parentNode.insertBefore(statusDiv, field.nextSibling);
-    }
 }
 
 // Initialize app when DOM is ready

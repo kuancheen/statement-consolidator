@@ -12,6 +12,7 @@ This workflow automates the steps needed to release a new version of the Stateme
 2. **Add changelog entry** at the top of `CHANGELOG.md` (manual edit).
 3. **Synchronize README version badge** – ensure the README badge matches the version in `config.js`. This step extracts the version from `config.js` and updates the badge if it differs.
    ```bash
+   ```bash
    # Extract version from config.js
    VERSION=$(grep -Po "VERSION: '\\K[^']+" config.js)
    # Current badge version in README
@@ -19,6 +20,23 @@ This workflow automates the steps needed to release a new version of the Stateme
    # If they differ, replace the badge
    if [[ "$CURRENT" != "version-${VERSION}-blue" ]]; then
      sed -i '' "s/version-[0-9]\\.[0-9]\\.[0-9]-blue/version-${VERSION}-blue/" README.md
+   fi
+   ```
+4. **Check/Update Copyright Year**
+   ```bash
+   YEAR=$(date +%Y)
+   if [[ "$YEAR" -gt 2025 ]]; then
+       # Define copyright string: "2025-YEAR"
+       COPY_TXT="2025-$YEAR"
+       
+       # Update LICENSE
+       sed -i '' "s/Copyright (c) 2025/Copyright (c) $COPY_TXT/" LICENSE
+       
+       # Update README.md
+       sed -i '' "s/Copyright (c) 2025/Copyright (c) $COPY_TXT/" README.md
+       
+       # Update index.html
+       sed -i '' "s/&copy; 2025/&copy; $COPY_TXT/" index.html
    fi
    ```
 4. **Commit changes**

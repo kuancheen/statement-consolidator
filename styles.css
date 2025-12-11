@@ -320,52 +320,7 @@ select:focus {
 }
 
 /* Status message */
-.status-message {
-  padding: var(--spacing-md);
-  border-radius: var(--radius-sm);
-  margin-bottom: var(--spacing-md);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  animation: slideIn var(--transition-base);
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.status-message.success {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--success);
-  color: var(--success);
-}
-
-.status-message.error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--error);
-  color: var(--error);
-}
-
-.status-message.warning {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid var(--warning);
-  color: var(--warning);
-}
-
-.status-message.info {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid var(--info);
-  color: var(--info);
-}
+/* Status message styles removed (migrated to field-status) */
 
 /* Account selector */
 .account-selector {

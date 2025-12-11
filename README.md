@@ -1,8 +1,9 @@
 # 💰 Statement Consolidator
 
-![Version](https://img.shields.io/badge/version--blue)
+![Version](https://img.shields.io/badge/version-0.3.45-blue)
 ![Status](https://img.shields.io/badge/status-beta-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://kuancheen.github.io/statement-consolidator/)
 
 A powerful web app to consolidate financial statements from multiple accounts (banks, credit cards, e-wallets) into Google Sheets with AI-powered transaction extraction and intelligent deduplication.
 
@@ -130,3 +131,9 @@ MIT License - feel free to use and modify!
 ## 🤝 Contributing
 
 Found a bug or want to add a feature? Feel free to open an issue or submit a pull request!
+
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+Copyright (c) 2025 Kuan Cheen

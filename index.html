@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="favicon.png">
 
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
@@ -32,12 +33,10 @@
       </p>
     </header>
 
-    <!-- Status Message -->
-    <div id="statusMessage" class="status-message hidden"></div>
-
     <!-- Step 1: API Key & Client ID Setup -->
     <section class="card">
       <h2 class="card-title">🔑 Step 1: Setup Credentials</h2>
+      <div id="step1Status"></div>
       <div class="form-group">
         <label for="apiKeyInput">1. Google AI API Key (for Gemini OCR)</label>
         <div class="input-wrapper">
@@ -81,6 +80,7 @@
     <!-- Step 2: Connect to Google Sheet -->
     <section class="card">
       <h2 class="card-title">📊 Step 2: Connect to Google Sheet</h2>
+      <div id="step2Status"></div>
       <div class="form-group">
         <label for="sheetUrlInput">Google Sheet URL or ID</label>
         <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/...">
@@ -202,7 +202,7 @@
     <footer
       style="text-align: center; margin-top: var(--spacing-xl); padding: var(--spacing-lg); color: var(--text-muted);">
       <p>
-        Made with ❤️ for better financial management
+        Made with ❤️ for better financial management &copy; 2025 Kuan Cheen
       </p>
       <p style="font-size: 0.875rem; margin-top: 0.5rem;">
         All processing happens in your browser. Your data is never sent to external servers.
