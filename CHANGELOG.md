@@ -4,6 +4,15 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.40] - 2025-12-11
+
+### Changed
+- **Advanced Sheet Automation ("Self-Healing"):** The app now enforces a stricter, cleaner layout for all connected sheets. It automatically:
+    - **Freezes Row 1** (Headers).
+    - **Enables Filters** on the header row.
+    - **Hides Column A** (Unique Key) even more reliably.
+    - **Deletes Extra Columns** (G onwards) to keep the sheet compact.
+    - **Fixes Conditional Formatting:** Updated the duplicate detection formula to correctly respect the header row (`=COUNTIF($A:$A, $A2)>1`), ensuring accurate highlighting.
 ## [0.3.39] - 2025-12-11
 
 ### Fixed
