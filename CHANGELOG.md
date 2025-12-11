@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.49] - 2025-12-11
+### Changed
+- **UI:** Renamed "Connect to Sheet" button to "Connect to Google" for clarity. The button text updates to "Connect/Refresh Sheet" upon successful authentication.
+
 ## [0.3.48] - 2025-12-11
 ### Fixed
 - **UI:** Fixed outdated hardcoded version number in the footer. The version display is now fully dynamic and synced with `config.js`.
