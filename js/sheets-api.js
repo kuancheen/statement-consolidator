@@ -389,7 +389,7 @@ class SheetsAPI {
             }
         });
 
-        // 6. Basic Filter (Enable on A1:F)
+        // 6. Basic Filter (Enable on A1:G - all columns)
         // Only set if not already set or incorrect range? 
         // We'll just set it to ensure it's on.
         requests.push({
@@ -400,17 +400,17 @@ class SheetsAPI {
             }
         });
 
-        // 7. Cleanup: Delete Extra Columns (G -> Z)
-        // Check gridProperties
+        // 7. Cleanup: Delete Extra Columns (H -> Z)
+        // Keep columns A-G (Unique Key, Batch ID, Date, Description, Credit, Debit, Status)
         const gridProps = sheetMeta.properties?.gridProperties || {};
         const colCount = gridProps.columnCount || 26;
-        if (colCount > 6) {
+        if (colCount > 7) {
             requests.push({
                 deleteDimension: {
                     range: {
                         sheetId: sheetId,
                         dimension: 'COLUMNS',
-                        startIndex: 7,
+                        startIndex: 7,  // Delete from H onwards
                         endIndex: colCount
                     }
                 }
@@ -426,8 +426,8 @@ class SheetsAPI {
         // Users often have data scattered. We can revisit if 'gridProperties.rowCount' is very high.
 
         // 9. Conditional Formatting (Idempotent - Fixed Formula)
-        // Range: A2:F (Start index 1)
-        // Formula: =COUNTIF($A:$A, $A2)>1
+        // Range: A2:G (all data columns)
+        // Formula: =COUNTIF($A:$A, $A2)>1 (highlights duplicate keys)
         const correctFormula = '=COUNTIF($A:$A, $A2)>1';
 
         // Remove OLD/Wrong rules first?
