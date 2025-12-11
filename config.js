@@ -1,5 +1,3 @@
-// Configuration for Statement Consolidator
-// Version: 0.1.0 (Beta)
 const CONFIG = {
     // App version
     VERSION: '0.3.42',
