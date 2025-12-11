@@ -719,10 +719,9 @@ class StatementConsolidatorApp {
         if (this.isProcessing) return;
 
         const readyFiles = this.fileQueue.getFiles().filter(f => f.status === 'done' && f.accountSheet);
-        if (readyFiles.length === 0) {
-            this.showStatus('No ready files to import', 'warning');
-            return;
-        }
+        // Show inline warning instead of global status
+        this.showFieldStatus('processAllBtn', 'No ready files to import', 'warning');
+        return;
 
         const btn = document.getElementById('processAllBtn');
         if (btn) btn.disabled = true; // Immediate visual lock
