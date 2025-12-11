@@ -4,6 +4,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.39] - 2025-12-11
+
+### Fixed
+- **Status Message Styling:** Fixed a bug where the status message text was incorrectly applied as a CSS class, causing transparent/white boxes. Status messages now correctly display as:
+    - **Processing:** Amber/Yellow
+    - **Success:** Green
+- **Button Locking:** Reinforced the button disable logic to ensure "Process Queue" and "Import All" buttons strictly remain disabled during operations.
 ## [0.3.38] - 2025-12-11
 
 ### Changed

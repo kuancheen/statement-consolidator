@@ -457,11 +457,14 @@ class StatementConsolidatorApp {
         const pending = this.fileQueue.getPendingFiles();
         if (pending.length === 0) return;
 
+        const btn = document.getElementById('processAllBtn');
+        if (btn) btn.disabled = true;
+
         this.isProcessing = true;
         this.renderFileQueue(); // Triggers disable
 
-        // Use inline status instead of global
-        this.showFieldStatus('processAllBtn', 'processing', `Processing ${pending.length} files...`);
+        // Use inline status (Correct: id, message, type)
+        this.showFieldStatus('processAllBtn', `Processing ${pending.length} files...`, 'processing');
 
         for (const fileObj of pending) {
             try {
@@ -489,10 +492,11 @@ class StatementConsolidatorApp {
 
         // Processing complete
         this.isProcessing = false;
+        if (btn) btn.disabled = false;
         this.renderFileQueue(); // Re-enable
 
         // Remove processing message or show done (Persistent)
-        this.showFieldStatus('processAllBtn', 'success', 'Queue processing complete');
+        this.showFieldStatus('processAllBtn', 'Queue processing complete', 'success');
 
         // No timeout - stays until user closes
     }
@@ -718,11 +722,14 @@ class StatementConsolidatorApp {
             return;
         }
 
-        this.isProcessing = true;
-        this.renderFileQueue(); // Lock UI
+        const btn = document.getElementById('processAllBtn');
+        if (btn) btn.disabled = true; // Immediate visual lock
 
-        // Use inline status
-        this.showFieldStatus('processAllBtn', 'processing', `Importing ${readyFiles.length} files...`);
+        this.isProcessing = true;
+        this.renderFileQueue(); // Logic lock
+
+        // Use inline status (Correct Order: fieldId, message, type)
+        this.showFieldStatus('processAllBtn', `Importing ${readyFiles.length} files...`, 'processing');
 
         let successCount = 0;
 
@@ -752,10 +759,12 @@ class StatementConsolidatorApp {
         }
 
         this.isProcessing = false;
-        this.renderFileQueue(); // Unlock UI
 
-        // Final Status - Persistent (User must close)
-        this.showFieldStatus('processAllBtn', 'success', `Batch import complete. Imported ${successCount} files.`);
+        if (btn) btn.disabled = false; // Re-enable (will be overridden by render if pending=0, handled there)
+        this.renderFileQueue(); // Sync UI state
+
+        // Final Status (Correct Order: fieldId, message, type)
+        this.showFieldStatus('processAllBtn', `Batch import complete. Imported ${successCount} files.`, 'success');
     }
 
     // Helper to update just the status element of a file card
