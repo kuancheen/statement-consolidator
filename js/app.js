@@ -67,6 +67,18 @@ class StatementConsolidatorApp {
             const val = e.target.value.trim();
             if (val) {
                 this.showFieldStatus('clientIdInput', 'Client ID saved locally ✓', 'success');
+            } else {
+                this.showFieldStatus('clientIdInput', 'Please enter Client ID', 'error');
+            }
+        });
+
+        // Sheet URL Feedback
+        document.getElementById('sheetUrlInput').addEventListener('change', (e) => {
+            const val = e.target.value.trim();
+            if (val) {
+                this.showFieldStatus('sheetUrlInput', 'Google Sheet ID saved locally ✓', 'success');
+            } else {
+                this.showFieldStatus('sheetUrlInput', 'Please enter Google Sheet URL or ID', 'error');
             }
         });
 
@@ -653,12 +665,12 @@ class StatementConsolidatorApp {
     // Helper for generating row HTML (since createTransactionRow returns DOM)
     createTransactionRowHTML(transaction, isDuplicate) {
         return `
-        < tr class="${isDuplicate ? 'duplicate' : ''}" >
+            <tr class="${isDuplicate ? 'duplicate' : ''}">
               <td>${transaction.date}</td>
               <td>${transaction.description}</td>
               <td class="amount credit">${transaction.credit || '-'}</td>
               <td class="amount debit">${transaction.debit || '-'}</td>
-            </tr >
+            </tr>
         `;
     }
 
@@ -709,6 +721,9 @@ class StatementConsolidatorApp {
 
         // Use inline status (Initial)
         this.showFieldStatus('processAllBtn', `Importing 1 of ${readyFiles.length} files...`, 'processing');
+
+        // Generate Batch ID for the whole batch
+        const batchId = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 
         let successCount = 0;
 
