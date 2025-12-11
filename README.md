@@ -1,6 +1,6 @@
 # 💰 Statement Consolidator
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.42-blue)
 ![Status](https://img.shields.io/badge/status-beta-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -8,8 +8,8 @@ A powerful web app to consolidate financial statements from multiple accounts (b
 
 ## ✨ Features
 
-- 🤖 **AI-Powered OCR**: Automatically extract transactions from PDFs and screenshots
-- 📊 **Google Sheets Integration**: Direct integration with your spreadsheets
+- 🤖 **AI-Powered OCR**: Automatically extract transactions from PDFs and screenshots (requires a Google AI / Gemini API key).
+- 📊 **Google Sheets Integration**: Direct integration with your spreadsheets using OAuth (recommended).
 - 🎯 **Smart Account Detection**: Automatically suggests which account a statement belongs to
 - 🔄 **Deduplication**: Prevents duplicate entries when uploading overlapping statements
 - 🎨 **Beautiful UI**: Modern, responsive design that works on all devices
@@ -17,28 +17,35 @@ A powerful web app to consolidate financial statements from multiple accounts (b
 
 ## 🚀 Quick Start
 
-### 1. Get Your API Key
+### Credentials you need (two pieces)
+1. Google AI / Gemini API Key — used only for OCR (extracting text from PDFs/images).
+2. OAuth Client ID — used to sign in with Google and write to Google Sheets (recommended and secure).
 
+### 1. Get Your Gemini API Key (for OCR)
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Sign in with your Google account
 3. Click "Create API Key"
 4. Copy the key (you'll enter it in the app)
 
-### 2. Prepare Your Google Sheet
+### 2. Create an OAuth Client ID (for Sheets)
+1. Open [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+2. Create an "OAuth Client ID" (Application type: Web application)
+3. Add origins/redirects if needed for local testing (e.g., http://localhost:8080)
+4. Copy the Client ID (you'll enter it in the app)
 
-1. Create a new Google Sheet or use an existing one
-2. Make it publicly editable:
-   - Click "Share" → "Anyone with the link"
-   - Change to "Editor" access
-3. Create sheets for your accounts with `@` prefix:
-   - Example: `@DBS Savings`, `@Maybank Credit`, `@GrabPay`
-4. Add headers in row 1: `Date`, `Description`, `Credit`, `Debit`
+### 3. Prepare Your Google Sheet
+- With OAuth sign-in enabled, you do NOT need to make the sheet publicly editable. Sign in with your Google account and grant the app permission to write to your sheets.
+- (Fallback only) If you cannot use OAuth, the app historically supported a public-sheet import mode — in that case the sheet must be made editable by "Anyone with the link". This mode is not recommended because OAuth is more secure.
 
-### 3. Use the App
+Suggested sheet layout:
+- Create sheets for your accounts with `@` prefix:
+  - Example: `@DBS Savings`, `@Maybank Credit`, `@GrabPay`
+- Add headers in row 1: `Date`, `Description`, `Credit`, `Debit`
 
+### 4. Use the App
 1. Open `index.html` in your browser (or visit the GitHub Pages URL)
-2. Enter your Gemini API key (stored locally in your browser)
-3. Enter your Google Sheet URL
+2. Enter your Gemini API key (stored locally in your browser) — used for OCR
+3. Enter your OAuth Client ID and click "Sign in with Google" to authorize Sheets access
 4. Upload a statement (PDF or screenshot)
 5. Verify the suggested account
 6. Review extracted transactions
@@ -76,23 +83,24 @@ The AI can extract transactions from:
 ## 🔧 How It Works
 
 1. **Upload**: You upload a statement file
-2. **OCR**: AI extracts text from the document
+2. **OCR**: AI extracts text from the document (using your Gemini API key)
 3. **Parse**: AI identifies transactions (date, description, amount)
 4. **Match**: AI suggests which account sheet it belongs to
 5. **Verify**: You confirm or change the account
 6. **Deduplicate**: System checks for existing transactions
-7. **Import**: New transactions are added to your sheet
+7. **Import**: New transactions are added to your sheet (via OAuth)
 
 ## 🛡️ Privacy & Security
 
 - ✅ All processing happens in your browser
-- ✅ API keys stored locally (never sent anywhere except to Google)
-- ✅ No data stored on external servers
+- ✅ API keys stored locally (Gemini key and OAuth client configuration are stored locally)
+- ✅ OAuth is used to grant the app permission to write to your Google Sheets (no need to make sheets public)
+- ✅ No app data is stored on external servers (unless you intentionally export)
 - ✅ Open source - you can verify the code
 
 ## ⚠️ Important Notes
 
-- Your Google Sheet must be publicly editable for the app to work
+- OAuth sign-in (Client ID) is the recommended and supported way to allow the app to write to your Google Sheets.
 - Large PDF files (>10MB) may take longer to process
 - Keep the browser tab open while processing
 - The Gemini API has a free tier limit (60 requests/minute)
@@ -100,9 +108,10 @@ The AI can extract transactions from:
 ## 🐛 Troubleshooting
 
 ### "Failed to connect to Google Sheet"
-- Check that your sheet URL is correct
-- Ensure the sheet is set to "Anyone with link can edit"
-- Verify you have internet connection
+- Ensure you have signed in with Google (OAuth) and granted the app permission to access Sheets
+- Verify the OAuth Client ID is correctly entered and that the Google Identity Services script has loaded
+- If you're using a public-sheet fallback, ensure the sheet's share settings allow editing by "Anyone with the link"
+- Check that you have internet connection
 
 ### "OCR failed"
 - Check that your Gemini API key is valid
