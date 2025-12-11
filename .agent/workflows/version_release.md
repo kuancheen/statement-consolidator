@@ -21,18 +21,33 @@ This workflow automates the steps needed to release a new version of the Stateme
      sed -i '' "s/version-[0-9]\\.[0-9]\\.[0-9]-blue/version-${VERSION}-blue/" README.md
    fi
    ```
-4. **Commit changes**
+   ```
+4. **Check/Update Copyright Year**
+   - Check the current year.
+   - If `current_year > 2025` (project creation year), update copyright notices in `LICENSE`, `README.md`, and `index.html` to format `2025-[Current Year]`.
+   - If `current_year == 2025`, ensure it says `2025`.
+   ```bash
+   YEAR=$(date +%Y)
+   if [[ "$YEAR" -gt 2025 ]]; then
+     # Update files (example using sed)
+     sed -i '' "s/2025-[0-9]\{4\}/2025-$YEAR/g" LICENSE README.md index.html
+     sed -i '' "s/Copyright (c) 2025 /Copyright (c) 2025-$YEAR /g" LICENSE
+     sed -i '' "s/&copy; 2025 /&copy; 2025-$YEAR /g" index.html
+     sed -i '' "s/Copyright &copy; 2025 /Copyright &copy; 2025-$YEAR /g" README.md
+   fi
+   ```
+5. **Commit changes**
    // turbo
    ```bash
    git add .
    git commit -m "chore: bump version to v0.3.43 – UI polish & button lock fixes"
    ```
-5. **Tag the release**
+6. **Tag the release**
    // turbo
    ```bash
    git tag v0.3.43
    ```
-6. **Push commit and tag**
+7. **Push commit and tag**
    // turbo
    ```bash
    git push && git push --tags
