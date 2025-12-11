@@ -4,6 +4,14 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.4.3] - 2025-12-11
+### Changed
+- **Schema Update:** Moved "Batch ID" from Column G to Column B in Google Sheets. New column order: [Unique Key (hidden), Batch ID, Date, Description, Credit, Debit, Status].
+- **Data Validation:** Updated Status dropdown to apply to Column G (was Column F).
+
+> [!WARNING]
+> This is a breaking schema change. If you have existing data, you may need to manually reorder columns or create a new sheet.
+
 ## [0.4.2] - 2025-12-11
 ### Refined
 - **UI Positioning:** Moved "Connected" message below "Sign In" button and added "Account Sheets:" label for clarity.

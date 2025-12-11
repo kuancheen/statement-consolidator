@@ -163,13 +163,13 @@ class SheetsAPI {
         const transactions = [];
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            // Row indices: 0=Key, 1=Date, 2=Desc, 3=Credit, 4=Debit, 5=Status
-            if (row.length >= 3) { // Ensure at least Date/Desc exist
+            // Row indices: 0=Key, 1=Batch, 2=Date, 3=Desc, 4=Credit, 5=Debit, 6=Status
+            if (row.length >= 4) { // Ensure at least Date/Desc exist
                 transactions.push({
-                    date: row[1] || '',
-                    description: row[2] || '',
-                    credit: row[3] || '',
-                    debit: row[4] || ''
+                    date: row[2] || '',
+                    description: row[3] || '',
+                    credit: row[4] || '',
+                    debit: row[5] || ''
                 });
             }
         }
@@ -178,8 +178,7 @@ class SheetsAPI {
     }
 
     // Append new transactions to a sheet
-    // UPDATED SCHEMA: A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status
-    // UPDATED SCHEMA (v0.4.0): A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status (Hidden/Unused), G=Batch ID
+    // UPDATED SCHEMA (v0.4.3): A=Key, B=Batch ID, C=Date, D=Desc, E=Credit, F=Debit, G=Status
     // STRATEGY: Two-Step Append. Append B:G (Data), then write A (Key) explicitly.
     // This avoids issues where hidden Column A causes 'append' to shift data to B.
     async appendTransactions(sheetName, transactions, sheetIdForSetup = null, batchId = null) {
@@ -207,14 +206,14 @@ class SheetsAPI {
 
             keysToUpdate.push([uniqueKey]); // For Column A
 
-            // Data for Columns B-F
+            // Data for Columns B-G
             return [
-                t.date,     // B: Date
-                t.description, // C: Desc
-                t.credit || '', // D: Credit
-                t.debit || '',  // E: Debit
-                'New',          // F: Status (Still kept for schema alignment, but hidden in UI)
-                batchId || ''   // G: Batch ID
+                batchId || '',  // B: Batch ID
+                t.date,         // C: Date
+                t.description,  // D: Desc
+                t.credit || '', // E: Credit
+                t.debit || '',  // F: Debit
+                'New'           // G: Status
             ];
         });
 
@@ -337,7 +336,7 @@ class SheetsAPI {
         // 1. Headers & Formatting
         if (headersValues[0] !== 'Unique Key') {
             const headers = [
-                'Unique Key', 'Date', 'Description', 'Credit', 'Debit', 'Status', 'Batch ID'
+                'Unique Key', 'Batch ID', 'Date', 'Description', 'Credit', 'Debit', 'Status'
             ];
             await fetch(
                 `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:G1?valueInputOption=USER_ENTERED`,
@@ -378,10 +377,10 @@ class SheetsAPI {
             }
         });
 
-        // 5. Data Validation (Status)
+        // 5. Data Validation (Status) - Now in Column G
         requests.push({
             setDataValidation: {
-                range: { sheetId: sheetId, startRowIndex: 1, startColumnIndex: 5, endColumnIndex: 6 },
+                range: { sheetId: sheetId, startRowIndex: 1, startColumnIndex: 6, endColumnIndex: 7 },
                 rule: {
                     condition: { type: 'ONE_OF_LIST', values: [{ userEnteredValue: 'New' }, { userEnteredValue: 'Duplicate' }, { userEnteredValue: 'To be deleted' }] },
                     showCustomUi: true,
