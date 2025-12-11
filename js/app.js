@@ -959,8 +959,7 @@ class StatementConsolidatorApp {
         transactions.forEach(t => {
             const row = [
                 t.date,
-                `"${t.description.replace(/" / g, '""')
-                } "`, // Escape quotes
+                `"${t.description.replace(/"/g, '""')}"`, // Escape quotes
                 t.credit || '',
                 t.debit || ''
             ];
