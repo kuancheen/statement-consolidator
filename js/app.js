@@ -538,36 +538,39 @@ class StatementConsolidatorApp {
     // Update assigned account manually
     async updateFileAccount(id, sheetTitle) {
         if (sheetTitle === '_NEW_') {
-            const accountName = prompt('Enter new account name (without @):');
-            if (accountName) {
-                // Check if already exists (case-insensitive check might be nicer but strict for now)
-                const existing = this.accountSheets.find(s => s.displayName.toLowerCase() === accountName.toLowerCase());
-                if (existing) {
-                    alert(`Account '${existing.displayName}' already exists. Selected it.`);
-                    this.fileQueue.setAccount(id, existing);
-                    this.renderFileQueue();
-                    return;
+            // Use setTimeout to allow the select dropdown to close fully before blocking with prompt
+            // This fixes the issue where the prompt disappears immediately on some browsers/OS
+            setTimeout(async () => {
+                const accountName = prompt('Enter new account name (without @):');
+                if (accountName) {
+                    // Check if already exists (case-insensitive check might be nicer but strict for now)
+                    const existing = this.accountSheets.find(s => s.displayName.toLowerCase() === accountName.toLowerCase());
+                    if (existing) {
+                        alert(`Account '${existing.displayName}' already exists. Selected it.`);
+                        this.fileQueue.setAccount(id, existing);
+                    } else {
+                        // Create New
+                        try {
+                            this.showFieldStatus('fileListHeader', 'Creating account sheet...', 'info');
+                            const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
+
+                            // Refresh global list
+                            this.accountSheets = await this.sheetsAPI.getAccountSheets();
+                            this.updateAccountSheetsList(); // Updates main selector if visible
+
+                            // Assign to THIS file
+                            const newSheet = this.accountSheets.find(s => s.title === newTitle);
+                            this.fileQueue.setAccount(id, newSheet);
+
+                            this.showFieldStatus('fileListHeader', `Created ${accountName}!`, 'success');
+                        } catch (e) {
+                            this.showFieldStatus('fileListHeader', `Error creating sheet: ${e.message}`, 'error');
+                        }
+                    }
                 }
-
-                try {
-                    this.showFieldStatus('fileListHeader', 'Creating account sheet...', 'info');
-                    const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
-
-                    // Refresh global list
-                    this.accountSheets = await this.sheetsAPI.getAccountSheets();
-                    this.updateAccountSheetsList(); // Updates main selector if visible
-
-                    // Assign to THIS file
-                    const newSheet = this.accountSheets.find(s => s.title === newTitle);
-                    this.fileQueue.setAccount(id, newSheet);
-
-                    this.showFieldStatus('fileListHeader', `Created ${accountName}!`, 'success');
-                } catch (e) {
-                    this.showFieldStatus('fileListHeader', `Error creating sheet: ${e.message}`, 'error');
-                }
-            }
-            // Always re-render to reflect new list and selection
-            this.renderFileQueue();
+                // Always re-render to reflect new list and selection (or reset if cancelled)
+                this.renderFileQueue();
+            }, 100);
             return;
         }
 

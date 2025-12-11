@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.55] - 2025-12-11
+### Fixed
+- **UI Interaction:** Fixed an issue where the "Create New Account" dialog would close immediately in Safari/Chrome when selected from the dropdown. Added a slight delay to allow the dropdown to close before opening the system prompt.
+
 ## [0.3.54] - 2025-12-11
 ### Fixed
 - **Crash Fix:** Removed reference to non-existent `#statusMessage` element in `app.js` which was causing a `TypeError` crash during initialization.
