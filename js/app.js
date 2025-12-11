@@ -47,6 +47,17 @@ class StatementConsolidatorApp {
             input.type = type;
         });
 
+        // Client ID Auto-Save
+        document.getElementById('clientIdInput').addEventListener('change', (e) => {
+            const val = e.target.value.trim();
+            if (val) {
+                localStorage.setItem(CONFIG.STORAGE_KEYS.CLIENT_ID, val);
+                // Optional: Provide subtle feedback? Or just keep it silent like standard forms.
+                // Let's match the API Key's explicit feedback style
+                this.showFieldStatus('clientIdInput', 'Client ID saved locally ✓', 'success');
+            }
+        });
+
         // Credentials Save
         document.getElementById('saveCredentialsBtn').addEventListener('click', () => {
             this.saveCredentials();
@@ -278,6 +289,9 @@ class StatementConsolidatorApp {
 
             await this.sheetsAPI.connect(sheetUrl);
             this.accountSheets = await this.sheetsAPI.getAccountSheets();
+
+            // Save successful connection URL
+            localStorage.setItem(CONFIG.STORAGE_KEYS.LAST_SHEET_ID, sheetUrl);
 
             if (this.accountSheets.length === 0) {
                 this.showFieldStatus('sheetUrlInput', 'No account sheets found. Ensure sheets start with @ (e.g., @DBS).', 'error');
