@@ -181,8 +181,7 @@ class StatementConsolidatorApp {
             // Show success in specific area
             this.showFieldStatus('saveCredentialsBtn', 'Credentials saved & initialized!', 'success');
 
-            // Hide global status if it was shown
-            document.getElementById('statusMessage').classList.add('hidden');
+
 
             // Try to init immediately
             this.updateAuthUI();
