@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.45] - 2025-12-11
+
+### Fixed
+- **Styling:** Fixed "No ready files" error message to correctly display as a red box (white text issue fixed).
+
 ## [0.3.44] - 2025-12-11
 
 ### Fixed

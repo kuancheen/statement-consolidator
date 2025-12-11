@@ -709,6 +709,12 @@ select.error {
   border: 1px solid var(--warning);
 }
 
+.field-status.error {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error);
+}
+
 /* Close button for field messages */
 .field-message-close {
   background: none;
