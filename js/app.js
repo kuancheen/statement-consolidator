@@ -55,14 +55,25 @@ class StatementConsolidatorApp {
         });
 
         // Client ID Auto-Save
+        // Client ID Auto-Save (Aggressive)
+        document.getElementById('clientIdInput').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            localStorage.setItem(CONFIG.STORAGE_KEYS.CLIENT_ID, val);
+            // No success message on every keystroke, too noisy
+        });
+
+        // Client ID Feedback on Change (Blur/Enter)
         document.getElementById('clientIdInput').addEventListener('change', (e) => {
             const val = e.target.value.trim();
             if (val) {
-                localStorage.setItem(CONFIG.STORAGE_KEYS.CLIENT_ID, val);
-                // Optional: Provide subtle feedback? Or just keep it silent like standard forms.
-                // Let's match the API Key's explicit feedback style
                 this.showFieldStatus('clientIdInput', 'Client ID saved locally ✓', 'success');
             }
+        });
+
+        // Sheet URL Auto-Save (Aggressive)
+        document.getElementById('sheetUrlInput').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            localStorage.setItem(CONFIG.STORAGE_KEYS.LAST_SHEET_ID, val);
         });
 
         // Credentials Save
