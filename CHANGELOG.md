@@ -4,6 +4,14 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.4.0] - 2025-12-11
+### Added
+- **Batch ID Tracking:** Added "Batch ID" column (Col G) to Google Sheets schema. The app now generates a unique timestamp (e.g., `2025-12-11 12:30:00`) for each import batch and writes it to every transaction.
+
+### Changed
+- **UI Refactor:** Simplified File Card interface by merging metadata sections and removing "New/Duplicate" counts.
+- **Table Cleanup:** Removed the "Status" column from both transaction preview tables (global and file-specific) as all imported transactions are treated as new.
+
 ## [0.3.55] - 2025-12-11
 ### Fixed
 - **UI Interaction:** Fixed an issue where the "Create New Account" dialog would close immediately in Safari/Chrome when selected from the dropdown. Added a slight delay to allow the dropdown to close before opening the system prompt.

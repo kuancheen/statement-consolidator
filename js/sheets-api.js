@@ -179,9 +179,10 @@ class SheetsAPI {
 
     // Append new transactions to a sheet
     // UPDATED SCHEMA: A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status
-    // STRATEGY: Two-Step Append. Append B:F (Data), then write A (Key) explicitly.
+    // UPDATED SCHEMA (v0.4.0): A=Key, B=Date, C=Desc, D=Credit, E=Debit, F=Status (Hidden/Unused), G=Batch ID
+    // STRATEGY: Two-Step Append. Append B:G (Data), then write A (Key) explicitly.
     // This avoids issues where hidden Column A causes 'append' to shift data to B.
-    async appendTransactions(sheetName, transactions, sheetIdForSetup = null) {
+    async appendTransactions(sheetName, transactions, sheetIdForSetup = null, batchId = null) {
         if (!this.sheetId) throw new Error('Not connected to a sheet');
         if (!this.accessToken) throw new Error('Auth required');
 
@@ -212,12 +213,13 @@ class SheetsAPI {
                 t.description, // C: Desc
                 t.credit || '', // D: Credit
                 t.debit || '',  // E: Debit
-                'New'       // F: Status
+                'New',          // F: Status (Still kept for schema alignment, but hidden in UI)
+                batchId || ''   // G: Batch ID
             ];
         });
 
-        // Step 1: Append Data to B:F
-        const range = `${sheetName}!B:F`;
+        // Step 1: Append Data to B:G
+        const range = `${sheetName}!B:G`;
         const appendRes = await fetch(
             `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
             {
@@ -335,10 +337,10 @@ class SheetsAPI {
         // 1. Headers & Formatting
         if (headersValues[0] !== 'Unique Key') {
             const headers = [
-                'Unique Key', 'Date', 'Description', 'Credit', 'Debit', 'Status'
+                'Unique Key', 'Date', 'Description', 'Credit', 'Debit', 'Status', 'Batch ID'
             ];
             await fetch(
-                `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:F1?valueInputOption=USER_ENTERED`,
+                `${this.baseUrl}/${this.sheetId}/values/${encodeURIComponent(sheetTitle)}!A1:G1?valueInputOption=USER_ENTERED`,
                 {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.accessToken}` },
@@ -394,7 +396,7 @@ class SheetsAPI {
         requests.push({
             setBasicFilter: {
                 filter: {
-                    range: { sheetId: sheetId, startRowIndex: 0, startColumnIndex: 0, endColumnIndex: 6 }
+                    range: { sheetId: sheetId, startRowIndex: 0, startColumnIndex: 0, endColumnIndex: 7 }
                 }
             }
         });
@@ -409,7 +411,7 @@ class SheetsAPI {
                     range: {
                         sheetId: sheetId,
                         dimension: 'COLUMNS',
-                        startIndex: 6,
+                        startIndex: 7,
                         endIndex: colCount
                     }
                 }
@@ -447,7 +449,7 @@ class SheetsAPI {
             requests.push({
                 addConditionalFormatRule: {
                     rule: {
-                        ranges: [{ sheetId: sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 6 }], // A2:F
+                        ranges: [{ sheetId: sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 7 }], // A2:G
                         booleanRule: {
                             condition: {
                                 type: 'CUSTOM_FORMULA',
