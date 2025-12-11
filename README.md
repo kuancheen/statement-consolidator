@@ -1,6 +1,6 @@
 # 💰 Statement Consolidator
 
-![Version](https://img.shields.io/badge/version-0.3.42-blue)
+![Version](https://img.shields.io/badge/version-0.3.44-blue)
 ![Status](https://img.shields.io/badge/status-beta-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 

@@ -150,8 +150,7 @@ class StatementConsolidatorApp {
             document.getElementById('apiKeyInput').value = savedKey;
             this.sheetsAPI.setApiKey(savedKey); // Ensure it's set here too
             // Show success in specific area
-            const statusDiv = document.getElementById('credentialsStatus');
-            statusDiv.innerHTML = '<div class="field-status success"><span>Credentials saved & initialized!</span></div>';
+            this.showFieldStatus('saveCredentialsBtn', 'Credentials saved & initialized!', 'success');
 
             // Hide global status if it was shown
             document.getElementById('statusMessage').classList.add('hidden');
@@ -719,9 +718,11 @@ class StatementConsolidatorApp {
         if (this.isProcessing) return;
 
         const readyFiles = this.fileQueue.getFiles().filter(f => f.status === 'done' && f.accountSheet);
-        // Show inline warning instead of global status
-        this.showFieldStatus('processAllBtn', 'No ready files to import', 'warning');
-        return;
+        if (readyFiles.length === 0) {
+            // Show inline warning instead of global status
+            this.showFieldStatus('processAllBtn', 'No ready files to import', 'error');
+            return;
+        }
 
         const btn = document.getElementById('processAllBtn');
         if (btn) btn.disabled = true; // Immediate visual lock

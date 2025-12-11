@@ -4,6 +4,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.44] - 2025-12-11
+
+### Fixed
+- **Dismissible Status:** "Credentials saved" message now correctly has a dismiss (X) button.
+- **Import Logic:** Fixed a critical bug where "Import All" was blocked even with valid files (No ready files error).
+- **Consolidated UX:** Standardized inline messages for import warnings to use the Error (Red) style for visibility.
+
 ## [0.3.43] - 2025-12-11
 
 ### Added
