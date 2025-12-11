@@ -4,6 +4,10 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.53] - 2025-12-11
+### Fixed
+- **Loading Race Condition:** Removed `async defer` from the Google Identity Services script in `index.html`. This fixes a critical crash (`ReferenceError: google is not defined`) that occurred because the app was trying to initialize stored credentials before the Google library had finished loading.
+
 ## [0.3.52] - 2025-12-11
 ### Fixed
 - **Cache Busting:** Added version query parameters (e.g., `?v=0.3.52`) to all script tags in `index.html`. This forces the browser to load the latest JavaScript files instead of serving stale cached versions that may lack recent persistence fixes.
