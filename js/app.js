@@ -165,13 +165,10 @@ class StatementConsolidatorApp {
         if (clientId) {
             document.getElementById('clientIdInput').value = clientId;
 
-            // Show inline status
+            // Show inline status via standard helper (adds dismiss button)
             if (savedKey) {
-                const statusDiv = document.getElementById('credentialsStatus');
-                if (statusDiv) {
-                    statusDiv.innerHTML = '<div class="field-status success"><span>Credentials loaded from storage ✓</span></div>';
-                    statusDiv.classList.remove('hidden');
-                }
+                // Target the button so the status appears below it
+                this.showFieldStatus('saveCredentialsBtn', 'Credentials loaded from storage ✓', 'success');
             }
 
             try {
