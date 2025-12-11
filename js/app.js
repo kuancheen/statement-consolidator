@@ -571,14 +571,13 @@ class StatementConsolidatorApp {
                         }
                     }
                 }
-            }
                 // Always re-render to reflect new list and selection (or reset if cancelled)
                 this.renderFileQueue();
-        }, 100);
-        return;
-    }
+            }, 100);
+            return;
+        }
 
-    const sheet = this.accountSheets.find(s => s.title === sheetTitle);
+        const sheet = this.accountSheets.find(s => s.title === sheetTitle);
         this.fileQueue.setAccount(id, sheet);
         // Note: No need to explicitly re-render here as the select element's value matches,
         // but if we wanted to be safe we could. However, standard 'change' event works fine.
@@ -586,42 +585,42 @@ class StatementConsolidatorApp {
 
     // Preview single file (Accordion style)
     async previewFile(id) {
-    const fileObj = this.fileQueue.getFile(id);
-    if (!fileObj || !fileObj.data) return;
+        const fileObj = this.fileQueue.getFile(id);
+        if (!fileObj || !fileObj.data) return;
 
-    const item = document.getElementById(`item-${id}`);
-    const previewContainer = item.querySelector('.file-preview-container');
+        const item = document.getElementById(`item-${id}`);
+        const previewContainer = item.querySelector('.file-preview-container');
 
-    // Toggle
-    const isActive = item.classList.contains('active');
-    document.querySelectorAll('.file-item').forEach(el => {
-        el.classList.remove('active');
-        el.querySelector('.file-preview-container').innerHTML = '';
-    });
+        // Toggle
+        const isActive = item.classList.contains('active');
+        document.querySelectorAll('.file-item').forEach(el => {
+            el.classList.remove('active');
+            el.querySelector('.file-preview-container').innerHTML = '';
+        });
 
-    if (isActive) return;
+        if (isActive) return;
 
-    // Open
-    item.classList.add('active');
+        // Open
+        item.classList.add('active');
 
-    this.selectedSheet = fileObj.accountSheet;
-    this.extractedData = fileObj.data;
+        this.selectedSheet = fileObj.accountSheet;
+        this.extractedData = fileObj.data;
 
-    // Render Loading
-    previewContainer.innerHTML = '<div class="processing-indicator" style="margin:0"><div class="spinner"></div><span>Preparing preview...</span></div>';
+        // Render Loading
+        previewContainer.innerHTML = '<div class="processing-indicator" style="margin:0"><div class="spinner"></div><span>Preparing preview...</span></div>';
 
-    // Deduplication Logic Removed (User requested "Upload All" strategy)
-    // We now just show all transactions as "New" locally.
-    const filtered = { unique: fileObj.data.transactions, duplicates: [] };
+        // Deduplication Logic Removed (User requested "Upload All" strategy)
+        // We now just show all transactions as "New" locally.
+        const filtered = { unique: fileObj.data.transactions, duplicates: [] };
 
-    // Generate Rows
-    const rows = filtered.unique.map(t => this.createTransactionRowHTML(t, false))
-        .join('');
+        // Generate Rows
+        const rows = filtered.unique.map(t => this.createTransactionRowHTML(t, false))
+            .join('');
 
-    // Account Display Name
-    const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected (Preview Only)</span>';
+        // Account Display Name
+        const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected (Preview Only)</span>';
 
-    const html = `
+        const html = `
         <div class="ocr-meta-box">
              <div class="ocr-meta-header">
                 <strong>Statement Info</strong>
@@ -642,18 +641,18 @@ class StatementConsolidatorApp {
         </div>
          <div class="text-center mt-2">
                 ${this.selectedSheet ?
-            `<button class="btn btn-success" onclick="app.importTransactions()">Import This File (Global)</button>` :
-            `<button class="btn btn-secondary" disabled title="Select an account to enable import">Select Account to Import</button>`
-        }
+                `<button class="btn btn-success" onclick="app.importTransactions()">Import This File (Global)</button>` :
+                `<button class="btn btn-secondary" disabled title="Select an account to enable import">Select Account to Import</button>`
+            }
              </div>
     `;
 
-    previewContainer.innerHTML = html;
-}
+        previewContainer.innerHTML = html;
+    }
 
-// Helper for generating row HTML (since createTransactionRow returns DOM)
-createTransactionRowHTML(transaction, isDuplicate) {
-    return `
+    // Helper for generating row HTML (since createTransactionRow returns DOM)
+    createTransactionRowHTML(transaction, isDuplicate) {
+        return `
         < tr class="${isDuplicate ? 'duplicate' : ''}" >
               <td>${transaction.date}</td>
               <td>${transaction.description}</td>
@@ -661,222 +660,222 @@ createTransactionRowHTML(transaction, isDuplicate) {
               <td class="amount debit">${transaction.debit || '-'}</td>
             </tr >
         `;
-}
-
-
-// Show error inline in file item
-showFileError(id, message) {
-    const item = document.getElementById(`item - ${id} `);
-    if (!item) return;
-
-    // Check if error already exists
-    let errorEl = item.querySelector('.file-inline-error');
-    if (!errorEl) {
-        errorEl = document.createElement('div');
-        errorEl.className = 'field-error file-inline-error';
-        errorEl.style.marginTop = '8px';
-
-        // Allow close
-        errorEl.innerHTML = `< span > ${message}</span > <button class="field-message-close" onclick="this.parentElement.remove()">×</button>`;
-
-        // Insert before actions
-        const actions = item.querySelector('.file-actions');
-        if (actions) {
-            item.insertBefore(errorEl, actions);
-        } else {
-            item.appendChild(errorEl);
-        }
-    } else {
-        errorEl.querySelector('span').textContent = message;
     }
-}
+
+
+    // Show error inline in file item
+    showFileError(id, message) {
+        const item = document.getElementById(`item - ${id} `);
+        if (!item) return;
+
+        // Check if error already exists
+        let errorEl = item.querySelector('.file-inline-error');
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'field-error file-inline-error';
+            errorEl.style.marginTop = '8px';
+
+            // Allow close
+            errorEl.innerHTML = `< span > ${message}</span > <button class="field-message-close" onclick="this.parentElement.remove()">×</button>`;
+
+            // Insert before actions
+            const actions = item.querySelector('.file-actions');
+            if (actions) {
+                item.insertBefore(errorEl, actions);
+            } else {
+                item.appendChild(errorEl);
+            }
+        } else {
+            errorEl.querySelector('span').textContent = message;
+        }
+    }
 
     // Import All Files
     async importAllFiles() {
-    if (this.isProcessing) return;
+        if (this.isProcessing) return;
 
-    const readyFiles = this.fileQueue.getFiles().filter(f => f.status === 'done' && f.accountSheet);
-    if (readyFiles.length === 0) {
-        // Show inline warning instead of global status
-        this.showFieldStatus('processAllBtn', 'No ready files to import', 'error');
-        return;
+        const readyFiles = this.fileQueue.getFiles().filter(f => f.status === 'done' && f.accountSheet);
+        if (readyFiles.length === 0) {
+            // Show inline warning instead of global status
+            this.showFieldStatus('processAllBtn', 'No ready files to import', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('processAllBtn');
+        if (btn) btn.disabled = true; // Immediate visual lock
+
+        this.isProcessing = true;
+        this.renderFileQueue(); // Logic lock
+
+        // Use inline status (Initial)
+        this.showFieldStatus('processAllBtn', `Importing 1 of ${readyFiles.length} files...`, 'processing');
+
+        let successCount = 0;
+
+        for (let i = 0; i < readyFiles.length; i++) {
+            const fileObj = readyFiles[i];
+
+            // Update Global Status
+            this.showFieldStatus('processAllBtn', `Importing ${i + 1} of ${readyFiles.length} files...`, 'processing');
+
+            try {
+                // UPDATE UI: Importing...
+                this.updateFileStatusUI(fileObj.id, 'importing', 'Importing...');
+
+                const transactionsToUpload = fileObj.data.transactions;
+
+                if (fileObj.status === 'done' && fileObj.accountSheet) {
+                    await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, fileObj.data.transactions, null, batchId);
+                    this.updateFileStatusUI(fileObj.id, 'imported', 'Imported');
+                    successCount++;
+                } else {   // UPDATE UI: Imported
+                    this.updateFileStatusUI(fileObj.id, 'imported', 'Imported ✓');
+                    // Optional: Update internal status so it sticks if re-rendered
+                    fileObj.status = 'imported';
+                } else {
+                    this.updateFileStatusUI(fileObj.id, 'done', 'Empty?');
+                }
+            } catch (e) {
+                console.error('Import failed for ' + fileObj.name, e);
+                this.updateFileStatusUI(fileObj.id, 'error', 'Failed');
+                this.showFileError(fileObj.id, e.message);
+            }
+        }
+
+        this.isProcessing = false;
+
+        if (btn) btn.disabled = false; // Re-enable (will be overridden by render if pending=0, handled there)
+        this.renderFileQueue(); // Sync UI state
+
+        // Final Status (Correct Order: fieldId, message, type)
+        this.showFieldStatus('processAllBtn', `Batch import complete.Imported ${successCount} files.`, 'success');
     }
 
-    const btn = document.getElementById('processAllBtn');
-    if (btn) btn.disabled = true; // Immediate visual lock
+    // Helper to update just the status element of a file card
+    updateFileStatusUI(id, statusClass, statusText) {
+        const item = document.getElementById(`item - ${id} `);
+        if (!item) return;
 
-    this.isProcessing = true;
-    this.renderFileQueue(); // Logic lock
-
-    // Use inline status (Initial)
-    this.showFieldStatus('processAllBtn', `Importing 1 of ${readyFiles.length} files...`, 'processing');
-
-    let successCount = 0;
-
-    for (let i = 0; i < readyFiles.length; i++) {
-        const fileObj = readyFiles[i];
-
-        // Update Global Status
-        this.showFieldStatus('processAllBtn', `Importing ${i + 1} of ${readyFiles.length} files...`, 'processing');
-
-        try {
-            // UPDATE UI: Importing...
-            this.updateFileStatusUI(fileObj.id, 'importing', 'Importing...');
-
-            const transactionsToUpload = fileObj.data.transactions;
-
-            if (fileObj.status === 'done' && fileObj.accountSheet) {
-                await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, fileObj.data.transactions, null, batchId);
-                this.updateFileStatusUI(fileObj.id, 'imported', 'Imported');
-                successCount++;
-            } else {   // UPDATE UI: Imported
-                this.updateFileStatusUI(fileObj.id, 'imported', 'Imported ✓');
-                // Optional: Update internal status so it sticks if re-rendered
-                fileObj.status = 'imported';
-            } else {
-                this.updateFileStatusUI(fileObj.id, 'done', 'Empty?');
-            }
-        } catch (e) {
-            console.error('Import failed for ' + fileObj.name, e);
-            this.updateFileStatusUI(fileObj.id, 'error', 'Failed');
-            this.showFileError(fileObj.id, e.message);
+        const statusEl = item.querySelector('.file-status');
+        if (statusEl) {
+            // Remove old status classes
+            statusEl.classList.remove('status-done', 'status-processing', 'status-error', 'status-pending', 'status-importing', 'status-imported');
+            // Add new
+            statusEl.classList.add(`status - ${statusClass} `);
+            statusEl.textContent = statusText;
         }
     }
-
-    this.isProcessing = false;
-
-    if (btn) btn.disabled = false; // Re-enable (will be overridden by render if pending=0, handled there)
-    this.renderFileQueue(); // Sync UI state
-
-    // Final Status (Correct Order: fieldId, message, type)
-    this.showFieldStatus('processAllBtn', `Batch import complete.Imported ${successCount} files.`, 'success');
-}
-
-// Helper to update just the status element of a file card
-updateFileStatusUI(id, statusClass, statusText) {
-    const item = document.getElementById(`item - ${id} `);
-    if (!item) return;
-
-    const statusEl = item.querySelector('.file-status');
-    if (statusEl) {
-        // Remove old status classes
-        statusEl.classList.remove('status-done', 'status-processing', 'status-error', 'status-pending', 'status-importing', 'status-imported');
-        // Add new
-        statusEl.classList.add(`status - ${statusClass} `);
-        statusEl.textContent = statusText;
-    }
-}
 
     // Legacy method helper for single file Preview flow
     async processFile(file) {
-    // Redundant now, kept if needed or logic moved to processQueue
-}
-
-// Show account selector
-showAccountSelector(suggestedSheet) {
-    const selector = document.getElementById('accountSelector');
-    const select = document.getElementById('accountSheetSelect');
-    const suggestion = document.getElementById('suggestedAccount');
-
-    if (suggestedSheet) {
-        select.value = suggestedSheet.title;
-        suggestion.textContent = `Suggested: ${suggestedSheet.displayName} `;
-        suggestion.classList.remove('hidden');
-    } else {
-        suggestion.classList.add('hidden');
+        // Redundant now, kept if needed or logic moved to processQueue
     }
 
-    selector.classList.remove('hidden');
-}
+    // Show account selector
+    showAccountSelector(suggestedSheet) {
+        const selector = document.getElementById('accountSelector');
+        const select = document.getElementById('accountSheetSelect');
+        const suggestion = document.getElementById('suggestedAccount');
 
-// Hide account selector
-hideAccountSelector() {
-    document.getElementById('accountSelector').classList.add('hidden');
-}
+        if (suggestedSheet) {
+            select.value = suggestedSheet.title;
+            suggestion.textContent = `Suggested: ${suggestedSheet.displayName} `;
+            suggestion.classList.remove('hidden');
+        } else {
+            suggestion.classList.add('hidden');
+        }
+
+        selector.classList.remove('hidden');
+    }
+
+    // Hide account selector
+    hideAccountSelector() {
+        document.getElementById('accountSelector').classList.add('hidden');
+    }
 
     // Confirm account selection
     async confirmAccount(sheet = null) {
-    if (sheet) {
-        this.selectedSheet = sheet;
-    } else {
-        const select = document.getElementById('accountSheetSelect');
-        const selectedValue = select.value;
+        if (sheet) {
+            this.selectedSheet = sheet;
+        } else {
+            const select = document.getElementById('accountSheetSelect');
+            const selectedValue = select.value;
 
-        if (!selectedValue) {
-            this.showFieldStatus('accountSheetSelect', 'Please select an account', 'error');
-            return;
+            if (!selectedValue) {
+                this.showFieldStatus('accountSheetSelect', 'Please select an account', 'error');
+                return;
+            }
+            this.selectedSheet = this.accountSheets.find(s => s.title === selectedValue);
         }
-        this.selectedSheet = this.accountSheets.find(s => s.title === selectedValue);
+
+        // No need to hide if we didn't show it (e.g. from Preview flow)
+        // But harmless to ensure it's hidden if we are moving to Step 4
+        this.hideAccountSelector();
+
+        // Load existing transactions for deduplication
+        // Note: Even though we bypass dedup for upload, we might still want to load them 
+        // if we ever want to re-enable it. But for now, we can skip or keep it silent.
+        // await this.loadExistingTransactions(); 
+
+        // Show preview
+        this.showTransactionPreview();
     }
-
-    // No need to hide if we didn't show it (e.g. from Preview flow)
-    // But harmless to ensure it's hidden if we are moving to Step 4
-    this.hideAccountSelector();
-
-    // Load existing transactions for deduplication
-    // Note: Even though we bypass dedup for upload, we might still want to load them 
-    // if we ever want to re-enable it. But for now, we can skip or keep it silent.
-    // await this.loadExistingTransactions(); 
-
-    // Show preview
-    this.showTransactionPreview();
-}
 
     // Show create account dialog
     async showCreateAccountDialog() {
-    const accountName = prompt('Enter new account name (without @ prefix):');
+        const accountName = prompt('Enter new account name (without @ prefix):');
 
-    if (!accountName) return;
+        if (!accountName) return;
 
-    try {
-        this.showFieldStatus('fileListHeader', 'Creating new account sheet...', 'info');
+        try {
+            this.showFieldStatus('fileListHeader', 'Creating new account sheet...', 'info');
 
-        const sheetTitle = await this.sheetsAPI.createAccountSheet(accountName);
+            const sheetTitle = await this.sheetsAPI.createAccountSheet(accountName);
 
-        // Refresh account sheets list
-        this.accountSheets = await this.sheetsAPI.getAccountSheets();
-        this.updateAccountSheetsList();
+            // Refresh account sheets list
+            this.accountSheets = await this.sheetsAPI.getAccountSheets();
+            this.updateAccountSheetsList();
 
-        // Select the new sheet
-        document.getElementById('accountSheetSelect').value = sheetTitle;
+            // Select the new sheet
+            document.getElementById('accountSheetSelect').value = sheetTitle;
 
-        this.showFieldStatus('fileListHeader', `Created account sheet: ${accountName} `, 'success');
+            this.showFieldStatus('fileListHeader', `Created account sheet: ${accountName} `, 'success');
 
-    } catch (error) {
-        this.showFieldStatus('fileListHeader', `Error creating sheet: ${error.message} `, 'error');
+        } catch (error) {
+            this.showFieldStatus('fileListHeader', `Error creating sheet: ${error.message} `, 'error');
+        }
     }
-}
 
     // Load existing transactions for deduplication
     async loadExistingTransactions() {
-    // Disabled for "Upload All" workflow to save API calls
-    return;
-    /*
-    try {
-        this.showStatus('Loading existing transactions...', 'info');
- 
-        const existing = await this.sheetsAPI.readTransactions(this.selectedSheet.title);
-        this.dedupEngine.setExistingTransactions(existing);
- 
-        this.showStatus(`Loaded ${ existing.length } existing transaction(s)`, 'success');
- 
-    } catch (error) {
-        this.showStatus(`Warning: Could not load existing transactions: ${ error.message } `, 'warning');
+        // Disabled for "Upload All" workflow to save API calls
+        return;
+        /*
+        try {
+            this.showStatus('Loading existing transactions...', 'info');
+     
+            const existing = await this.sheetsAPI.readTransactions(this.selectedSheet.title);
+            this.dedupEngine.setExistingTransactions(existing);
+     
+            this.showStatus(`Loaded ${ existing.length } existing transaction(s)`, 'success');
+     
+        } catch (error) {
+            this.showStatus(`Warning: Could not load existing transactions: ${ error.message } `, 'warning');
+        }
+        */
     }
-    */
-}
 
-// Show transaction preview
-showTransactionPreview() {
-    const previewSection = document.getElementById('previewSection');
-    const tbody = document.getElementById('transactionsTableBody');
-    const stats = document.getElementById('previewStats');
+    // Show transaction preview
+    showTransactionPreview() {
+        const previewSection = document.getElementById('previewSection');
+        const tbody = document.getElementById('transactionsTableBody');
+        const stats = document.getElementById('previewStats');
 
-    // BYPASS DEDUPLICATION: All transactions are treated as new
-    const allTransactions = this.extractedData.transactions;
+        // BYPASS DEDUPLICATION: All transactions are treated as new
+        const allTransactions = this.extractedData.transactions;
 
-    // Update stats - Simplified
-    stats.innerHTML = `
+        // Update stats - Simplified
+        stats.innerHTML = `
         < div class="stat-item" >
         <span class="stat-label">Total Extracted:</span>
         <span class="stat-value">${allTransactions.length}</span>
@@ -887,183 +886,183 @@ showTransactionPreview() {
         </div>
     `;
 
-    // Clear table
-    tbody.innerHTML = '';
+        // Clear table
+        tbody.innerHTML = '';
 
-    // Add all transactions as normal rows
-    allTransactions.forEach(transaction => {
-        const row = this.createTransactionRow(transaction, false); // isDuplicate = false
-        tbody.appendChild(row);
-    });
+        // Add all transactions as normal rows
+        allTransactions.forEach(transaction => {
+            const row = this.createTransactionRow(transaction, false); // isDuplicate = false
+            tbody.appendChild(row);
+        });
 
-    previewSection.classList.remove('hidden');
-}
+        previewSection.classList.remove('hidden');
+    }
 
-// Create HTML row (Global, likely unused if only using renderFileQueue, but keeping for safety in Step 4)
-createTransactionRow(transaction, isDuplicate) {
-    const tr = document.createElement('tr');
-    if (isDuplicate) tr.classList.add('duplicate');
+    // Create HTML row (Global, likely unused if only using renderFileQueue, but keeping for safety in Step 4)
+    createTransactionRow(transaction, isDuplicate) {
+        const tr = document.createElement('tr');
+        if (isDuplicate) tr.classList.add('duplicate');
 
-    tr.innerHTML = `
+        tr.innerHTML = `
         < td > ${transaction.date}</td >
       <td>${transaction.description}</td>
       <td class="amount credit">${transaction.credit || '-'}</td>
       <td class="amount debit">${transaction.debit || '-'}</td>
     `;
-    return tr;
-}
+        return tr;
+    }
 
     // Import transactions to Google Sheets
     async importTransactions() {
-    try {
-        const filtered = this.dedupEngine.filterDuplicates(this.extractedData.transactions);
-
-        if (filtered.unique.length === 0) {
-            this.showFieldStatus('importBtn', 'No new transactions to import', 'warning');
-            return;
-        }
-
-        this.showFieldStatus('importBtn', `Importing ${filtered.unique.length} transaction(s)...`, 'info');
-
-        // Generate Batch ID
-        const batchId = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-
         try {
-            await this.sheetsAPI.appendTransactions(this.selectedSheet.title, filtered.unique, null, batchId);
-            this.showFieldStatus('importBtn', `Successfully imported ${filtered.unique.length} transaction(s)!`, 'success');
+            const filtered = this.dedupEngine.filterDuplicates(this.extractedData.transactions);
 
-            // Play sound? (Optional)r next upload
-            setTimeout(() => {
-                this.resetUpload();
-            }, 2000);
-        } catch (error) {
-            // If write fails due to OAuth requirement, offer CSV download
-            if (error.message.includes('OAuth') || error.message.includes('UNAUTHENTICATED') || error.message.includes('API keys are not supported')) {
-                this.showFieldStatus('importBtn', 'Direct import requires OAuth. Downloading as CSV instead...', 'warning');
-                this.downloadAsCSV(filtered.unique);
-            } else {
-                throw error;
+            if (filtered.unique.length === 0) {
+                this.showFieldStatus('importBtn', 'No new transactions to import', 'warning');
+                return;
             }
+
+            this.showFieldStatus('importBtn', `Importing ${filtered.unique.length} transaction(s)...`, 'info');
+
+            // Generate Batch ID
+            const batchId = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+            try {
+                await this.sheetsAPI.appendTransactions(this.selectedSheet.title, filtered.unique, null, batchId);
+                this.showFieldStatus('importBtn', `Successfully imported ${filtered.unique.length} transaction(s)!`, 'success');
+
+                // Play sound? (Optional)r next upload
+                setTimeout(() => {
+                    this.resetUpload();
+                }, 2000);
+            } catch (error) {
+                // If write fails due to OAuth requirement, offer CSV download
+                if (error.message.includes('OAuth') || error.message.includes('UNAUTHENTICATED') || error.message.includes('API keys are not supported')) {
+                    this.showFieldStatus('importBtn', 'Direct import requires OAuth. Downloading as CSV instead...', 'warning');
+                    this.downloadAsCSV(filtered.unique);
+                } else {
+                    throw error;
+                }
+            }
+
+        } catch (error) {
+            this.showFieldStatus('importBtn', `Import failed: ${error.message} `, 'error');
+            console.error(error);
+        }
+    }
+
+    // Download transactions as CSV
+    downloadAsCSV(transactions) {
+        // Create CSV content
+        const headers = ['Date', 'Description', 'Credit', 'Debit'];
+        const csvRows = [headers.join(',')];
+
+        transactions.forEach(t => {
+            const row = [
+                t.date,
+                `"${t.description.replace(/" / g, '""')
+                } "`, // Escape quotes
+                t.credit || '',
+                t.debit || ''
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvContent = csvRows.join('\n');
+
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        const filename = `${this.selectedSheet.displayName}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showFieldStatus('step3Header', `Downloaded ${transactions.length} transactions as ${filename}. You can now import this CSV to your Google Sheet.`, 'success');
+
+        // Show instructions
+        setTimeout(() => {
+            alert(
+                `CSV Downloaded!\n\n` +
+                `File: ${filename}\n\n` +
+                `To import to Google Sheets:\n` +
+                `1. Open your Google Sheet: ${this.selectedSheet.title}\n` +
+                `2. Click File → Import\n` +
+                `3. Upload the CSV file\n` +
+                `4. Choose "Append to current sheet"\n` +
+                `5. Click "Import data"`
+            );
+        }, 500);
+    }
+
+    // Reset upload state
+    resetUpload() {
+        this.currentFile = null;
+        this.extractedData = null;
+        this.selectedSheet = null;
+
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInfo').classList.add('hidden');
+        document.getElementById('accountSelector').classList.add('hidden');
+        document.getElementById('previewSection').classList.add('hidden');
+
+        if (this.fileQueue.getFiles().length === 0) {
+            document.getElementById('organizerSection').classList.add('hidden');
+            this.showFieldStatus('step3Header', 'Ready for next upload', 'info');
+        } else {
+            this.showFieldStatus('step3Header', 'Ready for next file', 'info');
+        }
+    }
+
+
+    // Format file size
+    formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+
+
+    // Show field-specific success message
+    showFieldStatus(fieldId, message, type = 'success') {
+        const field = document.getElementById(fieldId);
+        const statusId = `${fieldId}Status`;
+
+        // Remove existing status
+        const existingStatus = document.getElementById(statusId);
+        if (existingStatus) {
+            existingStatus.remove();
         }
 
-    } catch (error) {
-        this.showFieldStatus('importBtn', `Import failed: ${error.message} `, 'error');
-        console.error(error);
+        // Create status message
+        const statusDiv = document.createElement('div');
+        statusDiv.id = statusId;
+        statusDiv.className = `field-status ${type}`;
+
+        // Create message text
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        statusDiv.appendChild(messageSpan);
+
+        // Create close button
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'field-message-close';
+        closeBtn.innerHTML = '×';
+        closeBtn.onclick = () => {
+            statusDiv.remove();
+        };
+        statusDiv.appendChild(closeBtn);
+
+        // Insert after field
+        field.parentNode.insertBefore(statusDiv, field.nextSibling);
     }
-}
-
-// Download transactions as CSV
-downloadAsCSV(transactions) {
-    // Create CSV content
-    const headers = ['Date', 'Description', 'Credit', 'Debit'];
-    const csvRows = [headers.join(',')];
-
-    transactions.forEach(t => {
-        const row = [
-            t.date,
-            `"${t.description.replace(/" / g, '""')
-            } "`, // Escape quotes
-            t.credit || '',
-            t.debit || ''
-        ];
-        csvRows.push(row.join(','));
-    });
-
-    const csvContent = csvRows.join('\n');
-
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-
-    const filename = `${this.selectedSheet.displayName}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    this.showFieldStatus('step3Header', `Downloaded ${transactions.length} transactions as ${filename}. You can now import this CSV to your Google Sheet.`, 'success');
-
-    // Show instructions
-    setTimeout(() => {
-        alert(
-            `CSV Downloaded!\n\n` +
-            `File: ${filename}\n\n` +
-            `To import to Google Sheets:\n` +
-            `1. Open your Google Sheet: ${this.selectedSheet.title}\n` +
-            `2. Click File → Import\n` +
-            `3. Upload the CSV file\n` +
-            `4. Choose "Append to current sheet"\n` +
-            `5. Click "Import data"`
-        );
-    }, 500);
-}
-
-// Reset upload state
-resetUpload() {
-    this.currentFile = null;
-    this.extractedData = null;
-    this.selectedSheet = null;
-
-    document.getElementById('fileInput').value = '';
-    document.getElementById('fileInfo').classList.add('hidden');
-    document.getElementById('accountSelector').classList.add('hidden');
-    document.getElementById('previewSection').classList.add('hidden');
-
-    if (this.fileQueue.getFiles().length === 0) {
-        document.getElementById('organizerSection').classList.add('hidden');
-        this.showFieldStatus('step3Header', 'Ready for next upload', 'info');
-    } else {
-        this.showFieldStatus('step3Header', 'Ready for next file', 'info');
-    }
-}
-
-
-// Format file size
-formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-
-
-// Show field-specific success message
-showFieldStatus(fieldId, message, type = 'success') {
-    const field = document.getElementById(fieldId);
-    const statusId = `${fieldId}Status`;
-
-    // Remove existing status
-    const existingStatus = document.getElementById(statusId);
-    if (existingStatus) {
-        existingStatus.remove();
-    }
-
-    // Create status message
-    const statusDiv = document.createElement('div');
-    statusDiv.id = statusId;
-    statusDiv.className = `field-status ${type}`;
-
-    // Create message text
-    const messageSpan = document.createElement('span');
-    messageSpan.textContent = message;
-    statusDiv.appendChild(messageSpan);
-
-    // Create close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'field-message-close';
-    closeBtn.innerHTML = '×';
-    closeBtn.onclick = () => {
-        statusDiv.remove();
-    };
-    statusDiv.appendChild(closeBtn);
-
-    // Insert after field
-    field.parentNode.insertBefore(statusDiv, field.nextSibling);
-}
 }
 
 // Initialize app when DOM is ready
