@@ -18,12 +18,19 @@ class StatementConsolidatorApp {
     }
 
     // Initialize the app
-    init() {
-        this.setupEventListeners();
-        this.loadSavedCredentials();
-        this.loadLastSheet();
-        this.displayVersion();
-        this.updateAuthUI();
+    async init() {
+        try {
+            this.setupEventListeners();
+            this.loadSavedCredentials();
+            this.displayVersion(); // Move this up so it runs immediately
+            await this.loadLastSheet(); // Await this as it's async
+        } catch (error) {
+            console.error('App initialization error:', error);
+            // Even if init fails, try to show critical UI elements
+            this.displayVersion();
+        } finally {
+            this.updateAuthUI();
+        }
     }
 
     // Setup event listeners
