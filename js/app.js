@@ -124,7 +124,7 @@ class StatementConsolidatorApp {
 
         // Listen for auth success
         document.addEventListener('auth-success', () => {
-            this.showFieldStatus('connectSheetBtn', 'Signed in with Google!', 'success');
+            this.showFieldStatus('connectionStatus', 'Signed in with Google!', 'success');
             // If we were trying to connect, retry?
             const sheetUrl = document.getElementById('sheetUrlInput').value.trim();
             if (sheetUrl) this.connectToSheet();
@@ -323,10 +323,10 @@ class StatementConsolidatorApp {
             localStorage.setItem(CONFIG.STORAGE_KEYS.LAST_SHEET_ID, sheetUrl);
 
             if (this.accountSheets.length === 0) {
-                this.showFieldStatus('sheetUrlInput', 'No account sheets found. Ensure sheets start with @ (e.g., @DBS).', 'error');
+                this.showFieldStatus('connectionStatus', 'No account sheets found. Ensure sheets start with @ (e.g., @DBS).', 'error');
                 document.getElementById('accountSheetsList').classList.add('hidden');
             } else {
-                this.showFieldStatus('sheetUrlInput', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
+                this.showFieldStatus('connectionStatus', `Connected! Found ${this.accountSheets.length} account sheet(s)`, 'success');
                 document.getElementById('uploadSection').classList.remove('hidden');
                 this.displayAccountSheetsList();
             }
@@ -334,7 +334,7 @@ class StatementConsolidatorApp {
             this.updateAccountSheetsList();
 
         } catch (error) {
-            this.showFieldStatus('sheetUrlInput', error.message, 'error');
+            this.showFieldStatus('connectionStatus', error.message, 'error');
         }
     }
 
@@ -354,7 +354,7 @@ class StatementConsolidatorApp {
     // Display account sheets list in Step 2
     displayAccountSheetsList() {
         const container = document.getElementById('accountSheetsList');
-        container.innerHTML = '';
+        container.innerHTML = '<div style="margin-bottom:8px; font-weight:600; font-size:0.9rem; color:var(--text-secondary);">Account Sheets:</div>';
 
         if (this.accountSheets.length > 0) {
             this.accountSheets.forEach(sheet => {
@@ -440,6 +440,11 @@ class StatementConsolidatorApp {
                     <div class="file-header-actions" onclick="event.stopPropagation()">
                          ${accountSelectHtml}
                          <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
+                         
+                         ${fileObj.status === 'done' && fileObj.accountSheet ?
+                    `<button class="icon-btn" onclick="app.importSingleFile('${fileObj.id}')" title="Import this transaction">📥</button>` : ''
+                }
+
                          <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
                          <span class="expand-icon" onclick="app.previewFile('${fileObj.id}')">▼</span>
                     </div>
@@ -577,9 +582,9 @@ class StatementConsolidatorApp {
                             const newSheet = this.accountSheets.find(s => s.title === newTitle);
                             this.fileQueue.setAccount(id, newSheet);
 
-                            this.showFieldStatus('fileListHeader', `Created ${accountName}!`, 'success');
+                            this.showFileError(id, `Created ${accountName}!`); // Show success inline
                         } catch (e) {
-                            this.showFieldStatus('fileListHeader', `Error creating sheet: ${e.message}`, 'error');
+                            this.showFileError(id, `Error creating sheet: ${e.message}`);
                         }
                     }
                 }
@@ -633,16 +638,11 @@ class StatementConsolidatorApp {
         const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected (Preview Only)</span>';
 
         const html = `
-        <div class="ocr-meta-box">
-             <div class="ocr-meta-header">
-                <strong>Statement Info</strong>
-             </div>
-             <div class="ocr-meta-grid">
-                <div><span>Account:</span> ${accountDisplay}</div>
-                <div><span>Statement Date:</span> ${fileObj.data.statementDate || '-'}</div>
-                <div><span>Period:</span> ${fileObj.data.period || '-'}</div>
-                <div><span>Total Transactions:</span> ${filtered.unique.length}</div>
-             </div>
+        <div class="ocr-meta-grid" style="margin-bottom:1rem; padding:0.75rem; background:var(--bg-secondary); border-radius:6px; font-size:0.875rem">
+            <div><strong>Account:</strong> ${accountDisplay}</div>
+            <div><strong>Statement Date:</strong> ${fileObj.data.statementDate || '-'}</div>
+            <div><strong>Period:</strong> ${fileObj.data.period || '-'}</div>
+             <div><strong>Total Transactions:</strong> ${filtered.unique.length}</div>
         </div>
 
         <div class="table-container preview-table-container">
@@ -651,12 +651,7 @@ class StatementConsolidatorApp {
                 <tbody>${rows}</tbody>
             </table>
         </div>
-         <div class="text-center mt-2">
-                ${this.selectedSheet ?
-                `<button class="btn btn-success" onclick="app.importTransactions()">Import This File (Global)</button>` :
-                `<button class="btn btn-secondary" disabled title="Select an account to enable import">Select Account to Import</button>`
-            }
-             </div>
+        <!-- Import button removed from here, moved to header actions icon -->
     `;
 
         previewContainer.innerHTML = html;
@@ -665,13 +660,13 @@ class StatementConsolidatorApp {
     // Helper for generating row HTML (since createTransactionRow returns DOM)
     createTransactionRowHTML(transaction, isDuplicate) {
         return `
-            <tr class="${isDuplicate ? 'duplicate' : ''}">
+            < tr class="${isDuplicate ? 'duplicate' : ''}" >
               <td>${transaction.date}</td>
               <td>${transaction.description}</td>
               <td class="amount credit">${transaction.credit || '-'}</td>
               <td class="amount debit">${transaction.debit || '-'}</td>
-            </tr>
-        `;
+            </tr >
+            `;
     }
 
 
@@ -763,6 +758,29 @@ class StatementConsolidatorApp {
 
         // Final Status (Correct Order: fieldId, message, type)
         this.showFieldStatus('processAllBtn', `Batch import complete.Imported ${successCount} files.`, 'success');
+    }
+
+    // Import Single File
+    async importSingleFile(id) {
+        const fileObj = this.fileQueue.getFile(id);
+        if (!fileObj || !fileObj.accountSheet) return;
+
+        try {
+            this.updateFileStatusUI(id, 'importing', 'Importing...');
+            const batchId = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+            await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, fileObj.data.transactions, null, batchId);
+
+            this.updateFileStatusUI(id, 'imported', 'Imported');
+            fileObj.status = 'imported';
+
+            // Check if queue complete
+            this.renderFileQueue();
+        } catch (e) {
+            console.error(e);
+            this.updateFileStatusUI(id, 'error', 'Failed');
+            this.showFileError(id, e.message);
+        }
     }
 
     // Helper to update just the status element of a file card
@@ -890,15 +908,15 @@ class StatementConsolidatorApp {
 
         // Update stats - Simplified
         stats.innerHTML = `
-        < div class="stat-item" >
+            < div class="stat-item" >
         <span class="stat-label">Total Extracted:</span>
         <span class="stat-value">${allTransactions.length}</span>
       </div >
-        <div class="stat-item">
-            <span class="stat-label">Account:</span>
-            <span class="stat-value" style="font-size: 1rem">${this.selectedSheet.displayName}</span>
-        </div>
-    `;
+            <div class="stat-item">
+                <span class="stat-label">Account:</span>
+                <span class="stat-value" style="font-size: 1rem">${this.selectedSheet.displayName}</span>
+            </div>
+        `;
 
         // Clear table
         tbody.innerHTML = '';
@@ -918,11 +936,11 @@ class StatementConsolidatorApp {
         if (isDuplicate) tr.classList.add('duplicate');
 
         tr.innerHTML = `
-        < td > ${transaction.date}</td >
+            < td > ${transaction.date}</td >
       <td>${transaction.description}</td>
       <td class="amount credit">${transaction.credit || '-'}</td>
       <td class="amount debit">${transaction.debit || '-'}</td>
-    `;
+        `;
         return tr;
     }
 
@@ -974,7 +992,8 @@ class StatementConsolidatorApp {
         transactions.forEach(t => {
             const row = [
                 t.date,
-                `"${t.description.replace(/"/g, '""')}"`, // Escape quotes
+                `"${t.description.replace(/" / g, '""')
+                } "`, // Escape quotes
                 t.credit || '',
                 t.debit || ''
             ];

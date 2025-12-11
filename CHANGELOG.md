@@ -4,6 +4,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.4.2] - 2025-12-11
+### Refined
+- **UI Positioning:** Moved "Connected" message below "Sign In" button and added "Account Sheets:" label for clarity.
+- **Table UX:** Added sticky headers to file preview tables for better scrolling.
+- **File Card UI:** Reverted "Statement Info" box to v0.3.55 grid style and replaced the broken "Import Global" button with a functional "Import" icon.
+- **Messaging:** Fixed typo in batch import success message ("Imported" spacing) and moved account creation notifications to appear inline on the relevant file card.
+
 ## [0.4.1] - 2025-12-11
 ### Fixed
 - **Table Rendering:** Fixed broken HTML in transaction preview where rows appeared as raw text `< tr >`.
