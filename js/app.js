@@ -727,13 +727,12 @@ class StatementConsolidatorApp {
                 if (fileObj.status === 'done' && fileObj.accountSheet) {
                     await this.sheetsAPI.appendTransactions(fileObj.accountSheet.title, fileObj.data.transactions, null, batchId);
                     this.updateFileStatusUI(fileObj.id, 'imported', 'Imported');
-                    successCount++;
-                } else {   // UPDATE UI: Imported
-                    this.updateFileStatusUI(fileObj.id, 'imported', 'Imported ✓');
-                    // Optional: Update internal status so it sticks if re-rendered
+                    // Update internal status
                     fileObj.status = 'imported';
+                    successCount++;
                 } else {
-                    this.updateFileStatusUI(fileObj.id, 'done', 'Empty?');
+                    // Not ready to import (e.g. no account selected)
+                    this.updateFileStatusUI(fileObj.id, 'error', 'No Account');
                 }
             } catch (e) {
                 console.error('Import failed for ' + fileObj.name, e);
