@@ -1,5 +1,5 @@
 ---
-description: Automate version bump, README update, and git release workflow
+description: STANDARD PROTOCOL (Run on EVERY change): Automate version bump, README/CHANGELOG update, copyright check, and git release.
 ---
 
 # Version Release Workflow
