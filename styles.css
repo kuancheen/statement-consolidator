@@ -243,6 +243,14 @@ select:focus {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(100%);
+}
+
 /* Drop zone */
 .drop-zone {
   border: 2px dashed var(--glass-border);

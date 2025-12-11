@@ -463,10 +463,15 @@ class StatementConsolidatorApp {
         this.isProcessing = true;
         this.renderFileQueue(); // Triggers disable
 
-        // Use inline status (Correct: id, message, type)
-        this.showFieldStatus('processAllBtn', `Processing ${pending.length} files...`, 'processing');
+        // Use inline status (Initial)
+        this.showFieldStatus('processAllBtn', `Processing 1 of ${pending.length} files...`, 'processing');
 
-        for (const fileObj of pending) {
+        for (let i = 0; i < pending.length; i++) {
+            const fileObj = pending[i];
+
+            // Update Global Status continuously
+            this.showFieldStatus('processAllBtn', `Processing ${i + 1} of ${pending.length} files...`, 'processing');
+
             try {
                 this.fileQueue.updateStatus(fileObj.id, 'processing');
                 this.renderFileQueue(); // Update UI
@@ -728,12 +733,17 @@ class StatementConsolidatorApp {
         this.isProcessing = true;
         this.renderFileQueue(); // Logic lock
 
-        // Use inline status (Correct Order: fieldId, message, type)
-        this.showFieldStatus('processAllBtn', `Importing ${readyFiles.length} files...`, 'processing');
+        // Use inline status (Initial)
+        this.showFieldStatus('processAllBtn', `Importing 1 of ${readyFiles.length} files...`, 'processing');
 
         let successCount = 0;
 
-        for (const fileObj of readyFiles) {
+        for (let i = 0; i < readyFiles.length; i++) {
+            const fileObj = readyFiles[i];
+
+            // Update Global Status
+            this.showFieldStatus('processAllBtn', `Importing ${i + 1} of ${readyFiles.length} files...`, 'processing');
+
             try {
                 // UPDATE UI: Importing...
                 this.updateFileStatusUI(fileObj.id, 'importing', 'Importing...');
