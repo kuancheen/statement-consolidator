@@ -436,8 +436,8 @@ class StatementConsolidatorApp {
                         </div>
                     </div>
                     
-                    <div class="file-header-actions" onclick="event.stopPropagation()">
-                         ${accountSelectHtml}
+                    <div class="file-item-header" onclick="event.stopPropagation()">
+                    <div class="file-name" onclick="app.openFilePreview('${fileObj.id}')" style="cursor: pointer; text-decoration: underline;" title="Click to preview file in new tab">📄 ${fileObj.file.name}</div>
                          <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
                          
                          ${fileObj.accountSheet && fileObj.status !== 'imported' ?
@@ -445,7 +445,8 @@ class StatementConsolidatorApp {
                 }
 
                          <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
-                         <span class="expand-icon" onclick="app.previewFile('${fileObj.id}')">▼</span>
+                         ${fileObj.status === 'done' || fileObj.status === 'imported' ?
+                    `<span class="expand-icon" onclick="app.previewFile('${fileObj.id}')"▼</span>` : ''}
                     </div>
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
@@ -661,9 +662,18 @@ class StatementConsolidatorApp {
           </tbody>
         </table>
 
-        <div class="table-container preview-table-container">
-            <table>
-                <thead><tr><th>Date</th><th>Description</th><th>Credit</th><th>Debit</th></tr></thead>
+        </table>
+
+        <div style="width:80%; margin:0 auto; max-height:400px; overflow-y:auto; border:1px solid var(--border-color); border-radius:6px;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem">
+                <thead style="position:sticky; top:0; background:var(--bg-secondary); z-index:1;">
+                    <tr>
+                        <th style="padding:0.5rem; text-align:left; border-bottom:2px solid var(--border-color);">Date</th>
+                        <th style="padding:0.5rem; text-align:left; border-bottom:2px solid var(--border-color);">Description</th>
+                        <th style="padding:0.5rem; text-align:right; border-bottom:2px solid var(--border-color);">Credit</th>
+                        <th style="padding:0.5rem; text-align:right; border-bottom:2px solid var(--border-color);">Debit</th>
+                    </tr>
+                </thead>
                 <tbody>${rows}</tbody>
             </table>
         </div>
@@ -676,13 +686,30 @@ class StatementConsolidatorApp {
     // Helper for generating row HTML (since createTransactionRow returns DOM)
     createTransactionRowHTML(transaction, isDuplicate) {
         return `
-            <tr class="${isDuplicate ? 'duplicate' : ''}">
-              <td>${transaction.date}</td>
-              <td>${transaction.description}</td>
-              <td class="amount credit">${transaction.credit || '-'}</td>
-              <td class="amount debit">${transaction.debit || '-'}</td>
+            <tr class="${isDuplicate ? 'duplicate' : ''}" style="border-bottom:1px solid var(--border-color);">
+              <td style="padding:0.5rem;">${transaction.date}</td>
+              <td style="padding:0.5rem;">${transaction.description}</td>
+              <td class="amount credit" style="padding:0.5rem; text-align:right;">${transaction.credit || '-'}</td>
+              <td class="amount debit" style="padding:0.5rem; text-align:right;">${transaction.debit || '-'}</td>
             </tr>
         `;
+    }
+
+    // Open file in new tab for preview
+    openFilePreview(id) {
+        const fileObj = this.fileQueue.getFile(id);
+        if (!fileObj || !fileObj.file) return;
+
+        // Create a blob URL for the file
+        const blobUrl = URL.createObjectURL(fileObj.file);
+
+        // Open in new tab
+        const newTab = window.open(blobUrl, '_blank');
+
+        // Clean up the blob URL after a delay
+        setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+        }, 1000);
     }
 
     // Helper to show inline status in file card

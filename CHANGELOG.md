@@ -4,6 +4,14 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.5.4] - 2025-12-12
+### Changed
+- **Expand Icon:** Expand icon (▼) now only appears when statement is processed (status: done or imported).
+- **Transaction Table:** Redesigned transaction preview table to 80% width (centered), limited to visible height of ~10 rows with scrollable content and sticky header.
+
+### Added
+- **File Preview:** Click on file name to open original file in new tab for preview.
+
 ## [0.5.3] - 2025-12-12
 ### Fixed
 - **File Status Styling:** Fixed inline file status messages to properly display colored boxes (green/blue/red) for success/info/error states. Corrected CSS class names from `file-inline-status field-{type}` to `field-status {type}`.
