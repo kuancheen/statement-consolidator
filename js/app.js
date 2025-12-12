@@ -690,7 +690,7 @@ class StatementConsolidatorApp {
         const statusDiv = document.getElementById(`file-status-${id}`);
         if (!statusDiv) return;
 
-        statusDiv.className = `file-inline-status field-${type}`;
+        statusDiv.className = `field-status ${type}`;
         statusDiv.style.width = '80%';
         statusDiv.style.margin = '0.5rem auto';
         statusDiv.style.textAlign = 'center';
