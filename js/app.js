@@ -450,7 +450,7 @@ class StatementConsolidatorApp {
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
                 <!-- Inline status for account operations -->
-                <div id="file-status-${fileObj.id}" class="file-inline-status" style="display:none; width:80%; margin:0.5rem auto; text-align:center;"></div>
+                <div id="file-status-${fileObj.id}" class="file-inline-status" style="display:none;"></div>
                 <!-- Inline Preview Container -->
                 <div class="file-preview-container" onclick="event.stopPropagation()"></div>
             `;
@@ -640,23 +640,23 @@ class StatementConsolidatorApp {
         const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected</span>';
 
         const html = `
-        <table class="ocr-meta-table" style="width:100%; margin-bottom:1rem; border-collapse:collapse; font-size:0.875rem">
+        <table class="ocr-meta-table" style="width:80%; margin:0 auto 1rem auto; border-collapse:collapse; font-size:0.875rem">
           <thead>
             <tr style="background:var(--bg-secondary);">
-              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Institution</th>
-              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Account Name</th>
-              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Type</th>
-              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Account</th>
-              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Total Transactions</th>
+              <th style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">Institution</th>
+              <th style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">Account Name</th>
+              <th style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">Type</th>
+              <th style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">Account</th>
+              <th style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">Total Transactions</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style="padding:0.5rem; border:1px solid var(--border-color);">${fileObj.data.institutionName || '-'}</td>
-              <td style="padding:0.5rem; border:1px solid var(--border-color);">${fileObj.data.accountName || '-'}</td>
-              <td style="padding:0.5rem; border:1px solid var(--border-color);">${fileObj.data.accountType || '-'}</td>
-              <td style="padding:0.5rem; border:1px solid var(--border-color);">${accountDisplay}</td>
-              <td style="padding:0.5rem; border:1px solid var(--border-color);">${filtered.unique.length}</td>
+              <td style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">${fileObj.data.institutionName || '-'}</td>
+              <td style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">${fileObj.data.accountName || '-'}</td>
+              <td style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);"><span style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:white; padding:0.25rem 0.75rem; border-radius:12px; font-weight:600; text-transform:uppercase; font-size:0.75rem;">${fileObj.data.accountType || '-'}</span></td>
+              <td style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);">${accountDisplay}</td>
+              <td style="padding:0.5rem; text-align:center; border:1px solid var(--border-color);"><span style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white; padding:0.25rem 0.75rem; border-radius:12px; font-weight:700; font-size:0.875rem;">${filtered.unique.length}</span></td>
             </tr>
           </tbody>
         </table>
@@ -691,6 +691,9 @@ class StatementConsolidatorApp {
         if (!statusDiv) return;
 
         statusDiv.className = `file-inline-status field-${type}`;
+        statusDiv.style.width = '80%';
+        statusDiv.style.margin = '0.5rem auto';
+        statusDiv.style.textAlign = 'center';
         statusDiv.innerHTML = `<span>${message}</span> <button class="field-message-close" onclick="this.parentElement.style.display='none'">×</button>`;
         statusDiv.style.display = 'block';
     }
