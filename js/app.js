@@ -431,13 +431,13 @@ class StatementConsolidatorApp {
                     <div class="file-info">
                         <span class="file-icon">${icon}</span>
                         <div style="min-width: 0;">
-                            <div class="file-name">${fileObj.name}</div>
+                            <div class="file-name" onclick="event.stopPropagation(); app.openFilePreview('${fileObj.id}');" style="cursor: pointer; text-decoration: underline;" title="Click to preview file in new tab">${fileObj.name}</div>
                             <div class="file-meta">${this.formatFileSize(fileObj.size)}</div>
                         </div>
                     </div>
                     
-                    <div class="file-item-header" onclick="event.stopPropagation()">
-                    <div class="file-name" onclick="app.openFilePreview('${fileObj.id}')" style="cursor: pointer; text-decoration: underline;" title="Click to preview file in new tab">📄 ${fileObj.file.name}</div>
+                    <div class="file-header-actions" onclick="event.stopPropagation()">
+                         ${accountSelectHtml}
                          <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
                          
                          ${fileObj.accountSheet && fileObj.status !== 'imported' ?
@@ -446,7 +446,7 @@ class StatementConsolidatorApp {
 
                          <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
                          ${fileObj.status === 'done' || fileObj.status === 'imported' ?
-                    `<span class="expand-icon" onclick="app.previewFile('${fileObj.id}')"▼</span>` : ''}
+                    `<span class="expand-icon">▼</span>` : ''}
                     </div>
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}

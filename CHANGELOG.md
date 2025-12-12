@@ -4,6 +4,11 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.5.5] - 2025-12-12
+### Fixed
+- **Critical:** Fixed broken file list HTML structure that caused missing expand icon, account select, and overlapping elements.
+- **File Name Click:** Moved click handler to file name with proper event.stopPropagation() to prevent conflicts.
+
 ## [0.5.4] - 2025-12-12
 ### Changed
 - **Expand Icon:** Expand icon (▼) now only appears when statement is processed (status: done or imported).
