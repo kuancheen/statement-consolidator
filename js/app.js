@@ -440,7 +440,7 @@ class StatementConsolidatorApp {
                          ${accountSelectHtml}
                          <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
                          
-                         ${fileObj.accountSheet ?
+                         ${fileObj.accountSheet && fileObj.status !== 'imported' ?
                     `<button class="icon-btn" onclick="app.importSingleFile('${fileObj.id}')" title="Import this statement">📥</button>` : ''
                 }
 
@@ -795,6 +795,7 @@ class StatementConsolidatorApp {
         if (!fileObj || !fileObj.accountSheet) return;
 
         try {
+            this.showFileInlineStatus(id, 'Importing...', 'info');
             this.updateFileStatusUI(id, 'importing', 'Importing...');
             const batchId = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 
@@ -802,13 +803,14 @@ class StatementConsolidatorApp {
 
             this.updateFileStatusUI(id, 'imported', 'Imported');
             fileObj.status = 'imported';
+            this.showFileInlineStatus(id, 'Successfully imported!', 'success');
 
             // Check if queue complete
             this.renderFileQueue();
         } catch (e) {
             console.error(e);
             this.updateFileStatusUI(id, 'error', 'Failed');
-            this.showFileError(id, e.message);
+            this.showFileInlineStatus(id, `Import failed: ${e.message}`, 'error');
         }
     }
 
