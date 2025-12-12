@@ -4,6 +4,15 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.5.1] - 2025-12-12
+### Fixed
+- **File Status:** Fixed inline file status styling to properly display colored message boxes (green/red/blue).
+- **Metadata Table:** Improved table design with 80% width, centered layout, and all text center-aligned.
+
+### Enhanced
+- **Type Badge:** Added purple gradient badge for account type with uppercase styling.
+- **Transaction Count:** Added pink gradient badge for total transactions count.
+
 ## [0.5.0] - 2025-12-12
 ### Added
 - **Import Button:** Import button (📥) now appears directly in file card header when account is selected, with corrected tooltip "Import this statement".
