@@ -304,7 +304,6 @@ class StatementConsolidatorApp {
         }
     }
 
-    // Connect to Google Sheet
     async connectToSheet() {
         const sheetUrl = document.getElementById('sheetUrlInput').value.trim();
 
@@ -314,7 +313,7 @@ class StatementConsolidatorApp {
         }
 
         try {
-            this.showFieldStatus('sheetUrlInput', 'Connecting to sheet...', 'info');
+            this.showFieldStatus('connectionStatus', 'Connecting to sheet...', 'info');
 
             await this.sheetsAPI.connect(sheetUrl);
             this.accountSheets = await this.sheetsAPI.getAccountSheets();
@@ -441,8 +440,8 @@ class StatementConsolidatorApp {
                          ${accountSelectHtml}
                          <span class="file-status status-${fileObj.status}">${fileObj.status}</span>
                          
-                         ${fileObj.status === 'done' && fileObj.accountSheet ?
-                    `<button class="icon-btn" onclick="app.importSingleFile('${fileObj.id}')" title="Import this transaction">📥</button>` : ''
+                         ${fileObj.accountSheet ?
+                    `<button class="icon-btn" onclick="app.importSingleFile('${fileObj.id}')" title="Import this statement">📥</button>` : ''
                 }
 
                          <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
@@ -450,6 +449,8 @@ class StatementConsolidatorApp {
                     </div>
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
+                <!-- Inline status for account operations -->
+                <div id="file-status-${fileObj.id}" class="file-inline-status" style="display:none; width:80%; margin:0.5rem auto; text-align:center;"></div>
                 <!-- Inline Preview Container -->
                 <div class="file-preview-container" onclick="event.stopPropagation()"></div>
             `;
@@ -571,7 +572,7 @@ class StatementConsolidatorApp {
                     } else {
                         // Create New
                         try {
-                            this.showFieldStatus('fileListHeader', 'Creating account sheet...', 'info');
+                            this.showFileInlineStatus(id, 'Creating account sheet...', 'info');
                             const newTitle = await this.sheetsAPI.createAccountSheet(accountName);
 
                             // Refresh global list
@@ -582,9 +583,9 @@ class StatementConsolidatorApp {
                             const newSheet = this.accountSheets.find(s => s.title === newTitle);
                             this.fileQueue.setAccount(id, newSheet);
 
-                            this.showFileError(id, `Created ${accountName}!`); // Show success inline
+                            this.showFileInlineStatus(id, `Created ${accountName}!`, 'success');
                         } catch (e) {
-                            this.showFileError(id, `Error creating sheet: ${e.message}`);
+                            this.showFileInlineStatus(id, `Error creating sheet: ${e.message}`, 'error');
                         }
                     }
                 }
@@ -596,6 +597,7 @@ class StatementConsolidatorApp {
 
         const sheet = this.accountSheets.find(s => s.title === sheetTitle);
         this.fileQueue.setAccount(id, sheet);
+        this.renderFileQueue(); // Re-render to show/hide import button
         // Note: No need to explicitly re-render here as the select element's value matches,
         // but if we wanted to be safe we could. However, standard 'change' event works fine.
     }
@@ -635,15 +637,29 @@ class StatementConsolidatorApp {
             .join('');
 
         // Account Display Name
-        const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected (Preview Only)</span>';
+        const accountDisplay = this.selectedSheet ? this.selectedSheet.displayName : '<span style="color:var(--text-muted); font-style:italic">No Account Selected</span>';
 
         const html = `
-        <div class="ocr-meta-grid" style="margin-bottom:1rem; padding:0.75rem; background:var(--bg-secondary); border-radius:6px; font-size:0.875rem">
-            <div><strong>Account:</strong> ${accountDisplay}</div>
-            <div><strong>Statement Date:</strong> ${fileObj.data.statementDate || '-'}</div>
-            <div><strong>Period:</strong> ${fileObj.data.period || '-'}</div>
-             <div><strong>Total Transactions:</strong> ${filtered.unique.length}</div>
-        </div>
+        <table class="ocr-meta-table" style="width:100%; margin-bottom:1rem; border-collapse:collapse; font-size:0.875rem">
+          <thead>
+            <tr style="background:var(--bg-secondary);">
+              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Institution</th>
+              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Account Name</th>
+              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Type</th>
+              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Account</th>
+              <th style="padding:0.5rem; text-align:left; border:1px solid var(--border-color);">Total Transactions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:0.5rem; border:1px solid var(--border-color);">${fileObj.data.institutionName || '-'}</td>
+              <td style="padding:0.5rem; border:1px solid var(--border-color);">${fileObj.data.accountName || '-'}</td>
+              <td style="padding:0.5rem; border:1px solid var(--border-color);">${fileObj.data.accountType || '-'}</td>
+              <td style="padding:0.5rem; border:1px solid var(--border-color);">${accountDisplay}</td>
+              <td style="padding:0.5rem; border:1px solid var(--border-color);">${filtered.unique.length}</td>
+            </tr>
+          </tbody>
+        </table>
 
         <div class="table-container preview-table-container">
             <table>
@@ -660,13 +676,23 @@ class StatementConsolidatorApp {
     // Helper for generating row HTML (since createTransactionRow returns DOM)
     createTransactionRowHTML(transaction, isDuplicate) {
         return `
-            < tr class="${isDuplicate ? 'duplicate' : ''}" >
+            <tr class="${isDuplicate ? 'duplicate' : ''}">
               <td>${transaction.date}</td>
               <td>${transaction.description}</td>
               <td class="amount credit">${transaction.credit || '-'}</td>
               <td class="amount debit">${transaction.debit || '-'}</td>
-            </tr >
-            `;
+            </tr>
+        `;
+    }
+
+    // Helper to show inline status in file card
+    showFileInlineStatus(id, message, type) {
+        const statusDiv = document.getElementById(`file-status-${id}`);
+        if (!statusDiv) return;
+
+        statusDiv.className = `file-inline-status field-${type}`;
+        statusDiv.innerHTML = `<span>${message}</span> <button class="field-message-close" onclick="this.parentElement.style.display='none'">×</button>`;
+        statusDiv.style.display = 'block';
     }
 
 

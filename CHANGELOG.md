@@ -4,6 +4,20 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.5.0] - 2025-12-12
+### Added
+- **Import Button:** Import button (📥) now appears directly in file card header when account is selected, with corrected tooltip "Import this statement".
+- **Inline Status:** Account creation feedback now displays inline within the specific file card instead of global header.
+- **Metadata Table:** Redesigned OCR metadata display as a 5-column table showing Institution, Account Name, Type, Account, and Total Transactions.
+
+### Changed
+- **Sheet URL Status:** Status messages for Sheet URL input now display inline next to the field, matching other input fields.
+- **Connection Messages:** "Connecting to sheet..." and "Connected!" messages now properly display in the connection status area instead of the input field.
+
+### Fixed
+- **Table Rendering:** Fixed escaped HTML tags appearing as text (`< tr >`) in transaction preview tables.
+- **Import Visibility:** Import button now shows/hides dynamically when account is selected/deselected.
+
 ## [0.4.4] - 2025-12-12
 ### Fixed
 - **Critical:** Fixed syntax error in CSV download function that prevented the application from loading.

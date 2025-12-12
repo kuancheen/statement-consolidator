@@ -97,10 +97,13 @@
     <!-- Step 2: Connect to Google Sheet -->
     <section class="card">
       <h2 id="step2Header" class="card-title">📊 Step 2: Connect to Google Sheet</h2>
-      <div class="form-group">
+      <div class="input-group">
         <label for="sheetUrlInput">Google Sheet URL or ID</label>
-        <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/...">
-        <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+          <input id="sheetUrlInput" type="text" placeholder="Paste your sheet URL here" style="flex: 1;" />
+          <div id="sheetUrlInputStatus" class="field-status-inline"></div>
+        </div>
+        <p class="helper-text">
           Make sure your sheet is set to "Anyone with link can edit"
         </p>
       </div>
@@ -257,12 +260,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/sheets-api.js?v=0.4.4"></script>
+  <script src="js/sheets-api.js?v=0.5.0"></script>
   <script src="js/jszip.min.js"></script>
-  <script src="js/file-queue.js?v=0.4.4"></script>
+  <script src="js/file-queue.js?v=0.5.0"></script>
 
-  <script src="js/ocr-service.js?v=0.4.4"></script>
-  <script src="js/app.js?v=0.4.4"></script>
+  <script src="js/ocr-service.js?v=0.5.0"></script>
+  <script src="js/app.js?v=0.5.0"></script>
 </body>
 
 </html>
