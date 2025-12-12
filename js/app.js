@@ -406,11 +406,10 @@ class StatementConsolidatorApp {
             let icon = '📄';
             if (fileObj.file.type.includes('image')) icon = '🖼️';
 
-            // Account options logic
+            // Account Select Logic
             let accountSelectHtml = '';
-            // Only show select if processed or if we want to allow pre-selection (skip for now to keep simple)
-
-            if (fileObj.status === 'done' || fileObj.accountSheet) {
+            // Only show select if processed and not imported, or if we want to allow pre-selection (skip for now to keep simple)
+            if (fileObj.status === 'done' && fileObj.status !== 'imported') {
                 const options = this.accountSheets.map(s =>
                     `<option value="${s.title}" ${fileObj.accountSheet?.title === s.title ? 'selected' : ''}>${s.displayName}</option>`
                 ).join('');
@@ -446,7 +445,7 @@ class StatementConsolidatorApp {
 
                          <button class="icon-btn" onclick="app.removeFile('${fileObj.id}')" title="Remove">🗑️</button>
                          ${fileObj.status === 'done' || fileObj.status === 'imported' ?
-                    `<span class="expand-icon">▼</span>` : ''}
+                    `<span class="expand-icon" onclick="app.previewFile('${fileObj.id}')">▼</span>` : ''}
                     </div>
                 </div>
                 ${fileObj.error ? `<div class="field-error" style="margin-top:8px">${fileObj.error}</div>` : ''}
@@ -718,11 +717,12 @@ class StatementConsolidatorApp {
         if (!statusDiv) return;
 
         statusDiv.className = `field-status ${type}`;
+        statusDiv.style.display = 'flex';
+        statusDiv.style.justifyContent = 'space-between';
+        statusDiv.style.alignItems = 'center';
         statusDiv.style.width = '80%';
         statusDiv.style.margin = '0.5rem auto';
-        statusDiv.style.textAlign = 'center';
         statusDiv.innerHTML = `<span>${message}</span> <button class="field-message-close" onclick="this.parentElement.style.display='none'">×</button>`;
-        statusDiv.style.display = 'block';
     }
 
 
@@ -813,7 +813,7 @@ class StatementConsolidatorApp {
         this.renderFileQueue(); // Sync UI state
 
         // Final Status (Correct Order: fieldId, message, type)
-        this.showFieldStatus('processAllBtn', `Batch import complete.Imported ${successCount} files.`, 'success');
+        this.showFieldStatus('processAllBtn', `Batch import complete. Imported ${successCount} files.`, 'success');
     }
 
     // Import Single File

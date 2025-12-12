@@ -4,6 +4,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.5.6] - 2025-12-12
+### Fixed
+- **Expand Icon:** Added onclick handler to expand/collapse icon that was missing in v0.5.5.
+- **Account Select:** Account dropdown now properly hides after statement is imported.
+- **Inline Status:** Fixed file status message alignment - message left-aligned, close button right-aligned using flexbox.
+- **Typo:** Fixed "Batch import complete.Imported" to "Batch import complete. Imported" (added space).
+
 ## [0.5.5] - 2025-12-12
 ### Fixed
 - **Critical:** Fixed broken file list HTML structure that caused missing expand icon, account select, and overlapping elements.
