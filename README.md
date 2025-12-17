@@ -1,6 +1,6 @@
 # 💰 Statement Consolidator
 
-![Version](https://img.shields.io/badge/version-0.5.6-blue.svg)
+![Version](https://img.shields.io/badge/version-0.5.7-blue.svg)
 ![Status](https://img.shields.io/badge/status-beta-orange)
 [![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://kuancheen.github.io/statement-consolidator/)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -16,7 +16,7 @@ A powerful web app to consolidate financial statements from multiple accounts (b
 - 🎯 **Smart Account Detection**: Automatically suggests which account a statement belongs to
 - 🔄 **Deduplication**: Prevents duplicate entries when uploading overlapping statements
 - 🎨 **Beautiful UI**: Modern, responsive design that works on all devices
-- 🔒 **Privacy First**: All processing happens in your browser
+- 🔒 **Privacy First**: Bank data is processed locally. OCR sends data only to Google (using your key). No other external servers.
 
 ## 🚀 Quick Start
 
