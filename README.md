@@ -4,6 +4,7 @@
 ![Status](https://img.shields.io/badge/status-beta-orange)
 [![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://kuancheen.github.io/statement-consolidator/)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Semantic Versioning](https://img.shields.io/badge/semver-2.0.0-blue.svg)](https://semver.org/)
 
 **[Live Demo](https://kuancheen.github.io/statement-consolidator/)**
 
