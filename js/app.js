@@ -300,7 +300,7 @@ class StatementConsolidatorApp {
     displayVersion() {
         const versionEl = document.getElementById('appVersion');
         if (versionEl) {
-            versionEl.textContent = `v${CONFIG.VERSION} ${CONFIG.VERSION_NAME}`;
+            versionEl.textContent = `v${CONFIG.VERSION} ${CONFIG.VERSION_NAME}`.trim();
         }
     }
 
