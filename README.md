@@ -1,11 +1,11 @@
 # 💰 Statement Consolidator
 
-![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)
 ![Status](https://img.shields.io/badge/status-active-success)
 [![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://kuancheen.github.io/statement-consolidator/)
 ![License](https://img.shields.io/badge/license-MIT-green)
 [![Semantic Versioning](https://img.shields.io/badge/semver-2.0.0-blue.svg)](https://semver.org/)
-![Views](https://hit.sh/kuancheen/statement-consolidator.svg?view=today-total&style=flat&label=%F0%9F%91%81%EF%B8%8F%20Views&extraCount=0&color=6366f1)
+![Views](https://hits.sh/kuancheen.github.io/statement-consolidator.svg?view=today-total&style=flat&label=👁️%20Views&extraCount=0&color=6366f1)
 
 **[Live Demo](https://kuancheen.github.io/statement-consolidator/)**
 

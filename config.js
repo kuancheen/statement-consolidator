@@ -1,6 +1,6 @@
 const CONFIG = {
     // App version
-    VERSION: '1.0.1',
+    VERSION: '1.0.2',
     VERSION_NAME: '',
 
     // Google Sheets API
