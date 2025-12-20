@@ -4,6 +4,18 @@ All notable changes to the Statement Consolidator project will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2025-12-20
+### Added
+- **v1.0.0 Stable Release:** Officially out of beta!
+- **Documentation Integration:** Footer now includes links to README and CHANGELOG via `md-viewer` for a premium reading experience.
+- **Analytics:** Integrated `hit.sh` view counter on the landing page and README.
+- **Copyright:** Footer now includes a link to the author's GitHub profile.
+
+### Changed
+- **Footer Redesign:** Compact, modern footer layout with version, documentation links, copyright, and analytics.
+- **Branding:** Removed "Beta" tags across the application.
+
 ## [0.5.7] - 2025-12-17
 ### Documentation
 - **Privacy Update:** Updated all privacy statements to clarify that OCR processing involves sending file data to Google AI (via user's own API key), while all other bank data processing remains local.

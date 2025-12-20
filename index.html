@@ -42,7 +42,7 @@
   </style>
 
   <!-- Config -->
-  <script src="config.js?v=0.5.7"></script>
+  <script src="config.js?v=1.0.0"></script>
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client"></script>
 </head>
@@ -253,26 +253,33 @@
         Processing is done locally in your browser. OCR data is sent to Google AI (via your own API key) for extraction
         only.
       </p>
-      <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">
-        <span id="appVersion"></span> |
-        <a href="https://github.com/kuancheen/statement-consolidator" target="_blank"
-          style="color: var(--primary-light); text-decoration: none;">
-          GitHub
-        </a>
-      </p>
-      <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 1rem;">
-        &copy; 2025 Kuan Cheen. Licensed under MIT.
+      <p
+        style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.8; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+        <span id="appVersion">v1.0.0</span>
+        <span style="opacity: 0.5;">|</span>
+        <a href="https://kuancheen.github.io/md-viewer/?https://github.com/kuancheen/statement-consolidator/blob/main/README.md"
+          target="_blank" style="color: var(--primary-light); text-decoration: none;">README</a>
+        <span style="opacity: 0.5;">|</span>
+        <a href="https://kuancheen.github.io/md-viewer/?https://github.com/kuancheen/statement-consolidator/blob/main/CHANGELOG.md"
+          target="_blank" style="color: var(--primary-light); text-decoration: none;">CHANGELOG</a>
+        <span style="opacity: 0.5;">|</span>
+        <span>&copy; 2025 <a href="https://github.com/kuancheen" target="_blank"
+            style="color: var(--text-primary); text-decoration: underline;">Kuan Cheen</a></span>
+        <span style="opacity: 0.5;">|</span>
+        <img
+          src="https://hit.sh/kuancheen/statement-consolidator.svg?view=today-total&style=flat-square&label=%F0%9F%91%81%EF%B8%8F%20Views&extraCount=0&color=6366f1"
+          alt="Views" style="height: 20px;">
       </p>
     </footer>
   </div>
 
   <!-- Scripts -->
-  <script src="js/sheets-api.js?v=0.5.7"></script>
+  <script src="js/sheets-api.js?v=1.0.0"></script>
   <script src="js/jszip.min.js"></script>
-  <script src="js/file-queue.js?v=0.5.7"></script>
+  <script src="js/file-queue.js?v=1.0.0"></script>
 
-  <script src="js/ocr-service.js?v=0.5.7"></script>
-  <script src="js/app.js?v=0.5.7"></script>
+  <script src="js/ocr-service.js?v=1.0.0"></script>
+  <script src="js/app.js?v=1.0.0"></script>
 </body>
 
 </html>
