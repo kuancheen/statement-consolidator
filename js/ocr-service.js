@@ -40,7 +40,7 @@ class OCRService {
     }
 
     // Extract transactions from file using Gemini AI
-    async extractTransactions(file) {
+    async extractTransactions(file, dateFormat = 'DD/MM/YYYY') {
         const apiKey = this.getApiKey();
         if (!apiKey) {
             throw new Error('Gemini API key not set');
@@ -49,16 +49,22 @@ class OCRService {
         try {
             // Convert file to base64
             const base64Data = await this.fileToBase64(file);
-            const mimeType = file.type;
+            const isImage = file.type.startsWith('image/');
+            const mimeType = isImage ? file.type : 'application/pdf';
 
             // Prepare the prompt for Gemini - Optimized for Token Efficiency (CSV)
             const prompt = `You are a financial transaction extractor. Analyze this bank statement, credit card statement, or e-wallet transaction screenshot and extract ALL transactions.
+
+CONTEXT:
+- The document likely follows the **${dateFormat}** date format (based on user locale).
 
 Output ONLY a raw CSV format with the following headers:
 Date,Description,Credit,Debit
 
 Guidelines:
-1. Date: YYYY-MM-DD or original format
+1. Date: **ALWAYS** convert to **YYYY-MM-DD** (ISO 8601) format.
+   - Example: If input is 01/02/2023 and format is DD/MM/YYYY -> 2023-02-01
+   - Example: If input is 01/02/2023 and format is MM/DD/YYYY -> 2023-01-02
 2. Description: Merchant name or details (no commas, replace with spaces)
 3. Credit: Amount if money in, else empty
 4. Debit: Amount if money out, else empty

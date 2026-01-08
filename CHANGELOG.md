@@ -5,6 +5,13 @@ All notable changes to the Statement Consolidator project will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-08
+### Added
+- **Locale-Aware Date Parsing:** Automatically detects user's browser locale (e.g., `en-GB` vs `en-US`) to correctly interpret ambiguous dates (DD/MM/YYYY vs MM/DD/YYYY).
+- **Date Format Indicator:** Displays the active date format below the upload drop zone for clarity.
+- **Smart AI Instructions:** Dynamically instructs the AI to interpret dates based on locale but **always** output standard ISO 8601 (`YYYY-MM-DD`).
+
+
 ## [1.0.2] - 2025-12-20
 ### Fixed
 - **Analytics:** Corrected `hits.sh` badge links in `index.html` and `README.md`.
