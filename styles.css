@@ -1130,8 +1130,9 @@ select.error {
 }
 
 /* Hover state overrides */
-background: var(--surface-hover);
-z-index: 1;
+.file-item:hover {
+  background: var(--surface-hover);
+  z-index: 1;
 }
 
 /* Date Format Badge */
