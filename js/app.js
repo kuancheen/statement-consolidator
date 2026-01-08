@@ -324,7 +324,7 @@ class StatementConsolidatorApp {
         const indicator = document.getElementById('dateFormatIndicator');
         const textSpan = document.getElementById('dateFormatText');
         if (indicator && textSpan) {
-            textSpan.textContent = `Using date format: ${this.currentDateFormat} (based on ${navigator.language})`;
+            textSpan.textContent = `Using date format: ${this.currentDateFormat} (${navigator.language}) based on your browser setting`;
             indicator.style.display = 'block';
         }
     }
