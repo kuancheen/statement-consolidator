@@ -5,6 +5,12 @@ All notable changes to the Statement Consolidator project will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-01-08
+### Changed
+- **Copyright**: Updated copyright year to 2025-2026 in HTML header.
+- **Cache Busting**: Added version parameter to `styles.css` for proper cache invalidation.
+
+
 ## [1.1.1] - 2026-01-08
 ### Fixed
 - **UI:** Refined date format indicator styling - now center-aligned, smaller font (0.75rem), and italicized for better visual hierarchy.
