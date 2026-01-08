@@ -140,4 +140,4 @@ MIT License - feel free to use and modify!
 Found a bug or want to add a feature? Feel free to open an issue or submit a pull request!
 
 ---
-Copyright &copy; 2025 Kuan Cheen. Licensed under [MIT](LICENSE).
+Copyright &copy; 2025-2026 Kuan Cheen. Licensed under [MIT](LICENSE).
