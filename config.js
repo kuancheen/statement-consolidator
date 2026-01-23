@@ -1,6 +1,6 @@
 const CONFIG = {
     // App version
-    VERSION: '1.1.3',
+    VERSION: '1.2.0',
     VERSION_NAME: '',
 
     // Google Sheets API
@@ -11,7 +11,7 @@ const CONFIG = {
 
     // Gemini AI API
     GEMINI_API_BASE: 'https://generativelanguage.googleapis.com/v1beta/models',
-    GEMINI_MODEL: 'gemini-2.0-flash',
+    GEMINI_MODEL: 'gemini-2.5-flash',
 
     // Local Storage Keys
     STORAGE_KEYS: {

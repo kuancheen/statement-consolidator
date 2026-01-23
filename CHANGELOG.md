@@ -5,6 +5,12 @@ All notable changes to the Statement Consolidator project will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-24
+### Changed
+- **AI Model Upgrade**: Migrated OCR extraction to **Gemini 2.5 Flash** for improved accuracy and future-proofing (Gemini 2.0 models being discontinued on March 31, 2026).
+- **Versioning**: Bumped to v1.2.0.
+
+
 ## [1.1.3] - 2026-01-08
 ### Fixed
 - **CSS Syntax**: Corrected missing `.file-item:hover` selector that was preventing date format badge styles from being applied.
